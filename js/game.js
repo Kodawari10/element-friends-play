@@ -309,19 +309,32 @@
     state.sort = mode; save(); applySort(); renderInventory(); inv.scrollTop = 0;
     announce(`Friends sorted ${SORTS[mode].say}`);
   }
-  let query = '';
+  // Drawer search: name, nickname, or Japanese name (kana or kanji anywhere, romaji from its start; long-vowel marks optional). Never saved.
+  let query = '', queryRaw = '';
+  function invFold(s) { return String(s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+  function invJpWord(id) { return window.EF_JP && window.EF_JP.word ? window.EF_JP.word(id) : null; }
+  // null = no match; '' = matched by English name/nickname; 'かな' = matched only through the Japanese name
+  function invMatch(e) {
+    if (!query) return '';
+    if (invFold(e.name).includes(query) || invFold(nickOf(e.id)).includes(query)) return '';
+    const w = invJpWord(e.id);
+    // kana/kanji anywhere, romaji from the start (so typing "mu" for Mud doesn't also pull in kemuri)
+    return w && ([w.kana, w.kanji].some(t => t && invFold(t).includes(query)) || invFold(w.romaji).startsWith(query)) ? w.kana : null;
+  }
   function renderInventory() {
-    const list = sortedFriends(state.found.map(id => D.byId[id]).filter(e => !query || e.name.toLowerCase().includes(query) || nickOf(e.id).toLowerCase().includes(query)));
+    const jpHit = {};
+    const list = sortedFriends(state.found.map(id => D.byId[id]).filter(e => { const m = invMatch(e); if (m) jpHit[e.id] = m; return m !== null; }));
     inv.innerHTML = '';
-    if (!list.length) { inv.innerHTML = `<div class="inv-empty">No friend called “${escapeHtml(query)}” yet…</div>`; return; }
+    if (!list.length) { inv.innerHTML = `<div class="inv-empty">No friend called “${escapeHtml(queryRaw)}” yet…<small>Try a name, a nickname, or a Japanese name like <span lang="ja">みず</span> or <i>mizu</i> 🗾</small></div>`; return; }
     const frag = document.createDocumentFragment();
     list.forEach(e => {
       const b = document.createElement('button');
       const left = state.mixCounts ? mixesLeft(e.id) : -1;
       b.type = 'button'; b.className = 'inv-item' + (e.final ? ' final' : '') + (left === 0 ? ' all-mixed' : '') + (isFave(e.id) ? ' fave' : ''); b.dataset.id = e.id; b.setAttribute('role', 'listitem');
       if (nickOf(e.id)) b.title = `${e.name} “${nickOf(e.id)}”`;
-      b.setAttribute('aria-label', e.name + (nickOf(e.id) ? `, nicknamed ${nickOf(e.id)}` : '') + (isFave(e.id) ? ', best friend' : '') + (state.seen[e.id] === false ? ', new' : '') + mixLabel(e.id) + '. Press Enter to select for mixing.');
-      b.innerHTML = art(e.id) + `<span class="lbl">${e.name}</span>` + (state.seen[e.id] === false ? '<span class="new">NEW</span>' : '') + mixBadge(e.id) + (isFave(e.id) ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '');
+      const jw = jpHit[e.id] ? invJpWord(e.id) : null;
+      b.setAttribute('aria-label', e.name + (jw ? `, Japanese name ${jw.romaji}` : '') + (nickOf(e.id) ? `, nicknamed ${nickOf(e.id)}` : '') + (isFave(e.id) ? ', best friend' : '') + (state.seen[e.id] === false ? ', new' : '') + mixLabel(e.id) + '. Press Enter to select for mixing.');
+      b.innerHTML = art(e.id) + `<span class="lbl">${e.name}</span>` + (jw ? `<span class="inv-jp" lang="ja" aria-hidden="true" title="${escapeHtml(jw.romaji)}">${escapeHtml(jw.kana)}</span>` : '') + (state.seen[e.id] === false ? '<span class="new">NEW</span>' : '') + mixBadge(e.id) + (isFave(e.id) ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '');
       b.addEventListener('pointerdown', ev => onDown(ev, { type: 'inv', id: e.id, el: b }));
       b.addEventListener('click', ev => { if (ev.detail === 0) handleTap({ type: 'inv', id: e.id, el: b }); });
       b.addEventListener('dblclick', () => { clearSel(); const [x, y] = freeSpot(); makePiece(e.id, x, y); SND.play('drop'); save(); });
@@ -1494,7 +1507,7 @@
     toast('Fresh start! Your four first friends say hi ✨');
   });
   $('#btnSort').addEventListener('click', () => { SND.unlock(); setSort(SORT_ORDER[(SORT_ORDER.indexOf(state.sort) + 1) % SORT_ORDER.length]); SND.play('select'); });
-  $('#search').addEventListener('input', ev => { query = ev.target.value.trim().toLowerCase(); renderInventory(); });
+  $('#search').addEventListener('input', ev => { queryRaw = ev.target.value.trim(); query = invFold(queryRaw); renderInventory(); });
   $('#drawerHandle').addEventListener('click', () => { const c = drawer.classList.toggle('collapsed'); $('#drawerHandle').setAttribute('aria-expanded', String(!c)); });
 
   // ---------- sleepy friends: after a quiet spell the friends on the playfield doze off; any touch wakes them ----------

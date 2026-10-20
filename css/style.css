@@ -1351,3 +1351,12 @@ html[data-theme="night"] .surprise-btn { background: linear-gradient(180deg, #4a
 @media (max-width: 340px) { .surprise-lbl { display: none; } }
 @media (prefers-reduced-motion: reduce) { .surprise-btn.roll .dice { animation: none; } }
 html.calm .surprise-btn.roll .dice { animation: none; }
+
+/* 🗾 Drawer search matched through a Japanese name: a little kana tag under the friend */
+.inv-item .inv-jp { display: block; width: max-content; max-width: 100%; margin: 1px auto 0; padding: 0 7px; border-radius: 9px; background: #ffe3f1; color: #c94888; font-size: 11px; font-weight: 800; letter-spacing: .03em; line-height: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; animation: invJpPop .35s cubic-bezier(.3, 1.6, .5, 1) both; }
+html.jp-labels .inv-item.has-jp .inv-jp { display: none; }
+html[data-theme="night"] .inv-item .inv-jp { background: rgba(255, 194, 224, .16); color: #ffc2e0; }
+.inv-empty small { display: block; margin-top: 6px; font-size: 12px; opacity: .85; }
+@keyframes invJpPop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .inv-item .inv-jp { animation: none; } }
+html.calm .inv-item .inv-jp { animation: none; }
