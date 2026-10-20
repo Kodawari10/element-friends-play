@@ -85,6 +85,7 @@
     SPONSORSHIP_UNAVAILABLE: { msg: 'Free minting isn’t available right now.', recovery: 'user_pays', retry: false },
     CHAIN_MISMATCH: { msg: `Wrong network. This game uses ${C.networkName || C.network}.`, recovery: 'switch_network', retry: false },
     POPUP_BLOCKED: { msg: 'Cartridge needs a popup. Please allow popups for this site ♡', recovery: 'allow_popup', retry: false },
+    INSUFFICIENT_FUNDS: { msg: `Your wallet needs a little ${C.faucetUrl ? 'test ' : ''}STRK to pay the mint fee.`, recovery: 'top_up', retry: false },
     UNKNOWN: { msg: 'Something went wrong', recovery: 'none', retry: false },
   };
   function classifyError(err) {
@@ -93,6 +94,7 @@
     let code = 'UNKNOWN';
     if (/reject|cancel|abort(ed)? by user|denied by user|user (closed|dismissed)|closed the (popup|window)/i.test(m)) code = 'USER_CANCELLED';
     else if (/popup.*block|blocked.*popup/i.test(m)) code = 'POPUP_BLOCKED';
+    else if (/insufficient (max.?fee|balance|funds|account balance|fee token)|balance is (smaller|lower|less) than|exceeds? (the )?(account |fee token )?balance|u256_sub overflow|not enough (funds|balance|STRK|ETH)/i.test(m)) code = 'INSUFFICIENT_FUNDS';
     else if (/not deployed|undeployed|contract not found.*account/i.test(m)) code = 'UNDEPLOYED_ACCOUNT';
     else if (/SNIP-9|not compatible with SNIP|paymaster|sponsor|gasless|outside.?execution/i.test(m)) code = 'SPONSORSHIP_UNAVAILABLE';
     else if (/chain.?id|chain mismatch|wrong network|network mismatch/i.test(m)) code = 'CHAIN_MISMATCH';
@@ -102,6 +104,11 @@
     else if (/failed to fetch|network ?error|fetch|ECONN|\b5\d\d\b|RPC/i.test(m)) code = 'RPC_OR_NETWORK';
     else if (/invalid|malformed|amount|decimals/i.test(m)) code = 'VALIDATION_ERROR';
     return Object.assign({ code, detail: m }, ERR[code]);
+  }
+  // Out of test STRK? A cute link to the free Sepolia faucet (only when faucetUrl is configured)
+  function faucetLink(label) {
+    if (!C.faucetUrl || !/^https:\/\//.test(C.faucetUrl)) return '';
+    return `<a class="faucet-link" href="${esc(C.faucetUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Get free test STRK from the Starknet faucet (opens in a new tab)">${label || '🚰 Get free test STRK ↗'}</a>`;
   }
   function codedError(code, detail) { const e = new Error(detail || ERR[code].msg); e.code = code; return e; }
   function friendly(err) {
@@ -487,7 +494,9 @@
     } catch (e) {
       const k = classifyError(e);
       lastError = { code: k.code, recovery: k.recovery, detail: String(k.detail || '').slice(0, 200) };
-      setStatus(statusEl, k.code === 'USER_CANCELLED' ? 'Mint cancelled, no worries ♡' : 'Mint failed: ' + friendly(e));
+      const topUp = k.code === 'INSUFFICIENT_FUNDS' && faucetLink() ? ' ' + faucetLink() + ' then try again ♡' : '';
+      setStatus(statusEl, k.code === 'USER_CANCELLED' ? 'Mint cancelled, no worries ♡' : 'Mint failed: ' + friendly(e) + topUp);
+      if (topUp) G.ui.announce('Mint failed. Your wallet needs a little test STRK. A faucet link is next to the mint button.');
     } finally { busy = false; }
   }
   const FINALITY = { RECEIVED: 'sent ✦', PRE_CONFIRMED: 'almost there ✦', CANDIDATE: 'almost there ✦', ACCEPTED_ON_L2: 'accepted ✦', ACCEPTED_ON_L1: 'final ✦' };
@@ -519,12 +528,17 @@
         : '<div class="chain-note">Fees: sponsored when Cartridge paymaster is available ✦</div>') +
         '<div class="chain-note">🔒 Session limited to minting Element Friends · every mint is checked first (preflight)</div>'
       : '';
+    // wallet pays the fee (extension wallets, or Cartridge after sponsorship fell back): point at the free test faucet
+    const paysFee = walletKind !== 'cartridge' || feeFallbackUsed;
+    const fuelNote = configured && paysFee && faucetLink()
+      ? `<div class="chain-note fuel-note" id="fuelNote">⛽ Minting uses a tiny bit of test STRK for the fee. Running low? ${faucetLink()}</div>` : '';
     body.innerHTML = `
       <div class="net-pill ${chainOk ? '' : 'bad'}">${chainOk ? '●' : '▲'} ${esc(C.networkName)}${via}${chainOk ? '' : ': please switch network in your wallet'}</div>
       <p class="addr" title="${esc(address || '')}">${esc(short(address))} <button class="btn mini" id="copyAddr" aria-label="Copy address">copy</button></p>
       ${configured ? '' : `<div class="chain-note">The Element Friends contract isn't deployed yet, so minting is off. Your friends are safe on this device. (Deploy steps are in <code>contracts/README.md</code>.)</div>`}
       ${fpMismatch ? `<div class="chain-note">Heads up: this game version has newer recipes than the deployed contract.</div>` : ''}
       ${feeNote}
+      ${fuelNote}
       <div class="chain-stats">
         <div><b>${onN}</b><span>on Starknet</span></div>
         <div><b>${localN}</b><span>on this device</span></div>

@@ -291,6 +291,9 @@ body:has(.modal:not([hidden])) .undo-bar { opacity: 0; pointer-events: none; } /
 .mint-status { min-height: 1em; margin: 8px 0 0; font-size: 13px; font-weight: 700; color: #6e5cd6; }
 .mint-status:empty { display: none; }
 .mint-status a { color: #6e5cd6; }
+.faucet-link { display: inline-block; margin: 2px 0; padding: 2px 10px; border-radius: 999px; background: #e3f6ff; border: 2px solid #9fd8f5; color: #2b7fb0 !important; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.faucet-link:hover, .faucet-link:focus-visible { background: #cfeeff; }
+html[data-theme="night"] .faucet-link { background: #2c3a66; border-color: #6fa8dc; color: #cfe8ff !important; }
 .wallet-list { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
 .wallet-opt { justify-content: flex-start !important; gap: 12px !important; font-size: 17px; padding: 12px 16px; }
 .wallet-opt img { border-radius: 8px; }

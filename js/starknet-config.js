@@ -17,6 +17,7 @@ window.EF_STARKNET_CONFIG = {
   explorerTx: 'https://sepolia.voyager.online/tx/',
   explorerContract: 'https://sepolia.voyager.online/contract/',
   explorerNft: 'https://sepolia.voyager.online/nft/',     // + <contract>/<tokenId>: a friend's collectible page
+  faucetUrl: 'https://starknet-faucet.vercel.app/',      // free Sepolia test STRK for mint fees (Starknet Foundation). Remove on mainnet.
   batchSize: 30,                              // discoveries minted per transaction when syncing many
   // Cartridge / StarkZap (cute onboarding: no seed phrase; sponsored fees when available)
   cartridge: {
