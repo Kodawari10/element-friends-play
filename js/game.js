@@ -1380,7 +1380,7 @@
     if (state.board === null) { placeStarters(); if (!newFriends) setTimeout(() => toast('Drop Water onto Fire and see what happens! 💧🔥', 4200), 600); }
     else restoreBoard();
     seasonNews();
-    if (newFriends) { save(); setTimeout(() => { toast(`🎀 ${newFriends} new friend${newFriends > 1 ? 's' : ''} moved in! Look for floaty otters, sleepy bats, fluffy sheep and onigiri ✨`, 5200); announce(`${newFriends} new friends were added to the game.`); }, 700); }
+    if (newFriends) { save(); setTimeout(() => { toast(`🎀 ${newFriends} new friend${newFriends > 1 ? 's' : ''} moved in! Look for a pumpkin, a little witch, a lucky black cat and a tanuki 🎃✨`, 5200); announce(`${newFriends} new friends were added to the game.`); }, 700); }
   });
 
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
@@ -1441,7 +1441,7 @@
     hamster: 'Nom nom 🌻', koala: 'Five more minutes... 💤', otter: 'Hold my paw! 🦦', bat: 'Boo-tiful night! 🦇', sheep: 'Baa~ count me! 🐑', dolphin: 'Eee-eee! 🐬', octopus: 'Eight hugs! 🐙', whale: 'Big splash! 🐳',
     dragon: 'Rawr~ 🐉', unicorn: 'Sparkle time! 🦄', ghost: 'Boo! ...hehe 👻', ninja: '...(hiding)', wizard: 'Abracadabra ✨',
     princess: 'Tea party? 👑', astronaut: 'To the moon! 🚀', robot: 'Beep boop! 🤖', rocket: '3, 2, 1... 🚀', alien: 'Take me to your snacks 👽',
-    cake: 'Party time? 🎂', icecream: "Don't let me melt! 🍦", boba: 'Slurp~ 🧋', mochi: 'Squishy~ 🍡', onigiri: 'Itadakimasu! 🍙', honey: 'Sweet as can be 🍯',
+    cake: 'Party time? 🎂', icecream: "Don't let me melt! 🍦", boba: 'Slurp~ 🧋', mochi: 'Squishy~ 🍡', onigiri: 'Itadakimasu! 🍙', pumpkin: 'Happy harvest! 🎃', witch: 'Hocus pocus, sweets for focus! 🧹', blackcat: 'Lucky meow~ 🐈‍⬛', tanuki: 'Pon-poko-pon! 🍃', honey: 'Sweet as can be 🍯',
     cocoa: 'Marshmallows? ☕', love: 'Love you! 💗', happiness: 'Smile! 😊', baby: 'Goo goo! 🍼', magic: 'Ta-da! ✨',
   };
   const CHAT_ANY = ['Hi hi! 👋', "Let's mix! ✨", 'Teehee~', 'La la la ♪', 'So cozy~', 'Yay, friends! 💕', 'Hmm... 💭', 'Pick me! 🙋'];

@@ -13,7 +13,7 @@
   const KINDS = ['witch', 'pumpkin', 'bat'];
   const NAMES = { witch: 'a witch hat', pumpkin: 'a pumpkin cap', bat: 'bat wings' };
   // head-top accessories: these friends are already dressed up
-  const HEADWEAR = new Set(['nightcap', 'sailorHat', 'bonnet', 'wizardHat', 'tiara', 'helmetSlit', 'plume', 'flowerCrown', 'topHat', 'visor', 'antennaHelmet', 'halo', 'crown', 'headband', 'roof', 'chimney', 'battlements', 'lid', 'jarLid', 'cherry', 'snowcap', 'propeller', 'noseCone', 'flag', 'umbrella', 'flowerTop', 'heartTop', 'sproutBig', 'lavaTop', 'smokeTop', 'steamTop', 'antenna', 'boltTop', 'palm', 'straw', 'spout', 'curlTop', 'crestFlame', 'mane', 'maneRainbow', 'horn', 'horns', 'eggShell']);
+  const HEADWEAR = new Set(['witchHat', 'pumpkinStem', 'leafTop', 'nightcap', 'sailorHat', 'bonnet', 'wizardHat', 'tiara', 'helmetSlit', 'plume', 'flowerCrown', 'topHat', 'visor', 'antennaHelmet', 'halo', 'crown', 'headband', 'roof', 'chimney', 'battlements', 'lid', 'jarLid', 'cherry', 'snowcap', 'propeller', 'noseCone', 'flag', 'umbrella', 'flowerTop', 'heartTop', 'sproutBig', 'lavaTop', 'smokeTop', 'steamTop', 'antenna', 'boltTop', 'palm', 'straw', 'spout', 'curlTop', 'crestFlame', 'mane', 'maneRainbow', 'horn', 'horns', 'eggShell']);
   let on = true, tip = '';
   try { const s = JSON.parse(localStorage.getItem(KEY) || '{}'); if (s && s.on === false) on = false; if (s && typeof s.tip === 'string') tip = s.tip; } catch (e) { on = true; tip = ''; }
   const remember = () => { try { localStorage.setItem(KEY, JSON.stringify({ on, tip })); } catch (e) { /* ignore */ } };

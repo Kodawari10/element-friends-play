@@ -114,6 +114,8 @@
   el('snail', 'Snail', 'round', '#d6eba0', ['snailShell:#ffb3a7', 'eyeStalks'], 'happy', 'smile', 'Slow and steady, it carries a swirly cozy home.', { scale: 0.84 });
   el('otter', 'Otter', 'round', '#c39a78', ['earsBear', 'muzzle:#f6e6d4', 'whiskers', 'starfishClip'], 'happy', 'smile', 'Floats on its back and holds paws so it never drifts away.', { scale: 0.88 });
   el('bat', 'Bat', 'round', '#a294d0', ['earsCat:#a294d0', 'wingsDragon:#8a7bc0', 'cheeks'], 'big', 'fang', 'Hangs upside down to see the world from a sillier side.', { scale: 0.86 });
+  el('blackcat', 'Black Cat', 'round', '#6e6688', ['earsCat:#6e6688', 'muzzle:#b9b2d2', 'whiskers', 'tailCat', 'collar'], 'big', 'cat', 'A midnight kitty with a golden bell. Crossing its path brings good luck!', { ring: true });
+  el('tanuki', 'Tanuki', 'round', '#b8916c', ['earsBear', 'tanukiMask', 'muzzle:#f6e6d4', 'tailTanuki', 'leafTop'], 'happy', 'smile', 'A tubby raccoon dog who pops a leaf on its head to turn into a teapot. Pon-poko!');
   el('sheep', 'Sheep', 'cloud', '#fffaf3', ['earsSheep', 'curlTop', 'cheeks'], 'sleepy', 'cat', 'A walking cloud of wool. Counting it makes you sleepy.');
   // ---- people & magic ----
   el('love', 'Love', 'heart', '#ff9ec2', ['heartsFloat'], 'happy', 'open', 'The warm fuzzy feeling in your chest.');
@@ -122,6 +124,7 @@
   el('ninja', 'Ninja', 'round', '#55597e', ['faceWindow:#ffe0cc', 'headband:#ff6f8a'], 'big', 'smile', 'Silent, sneaky and really good at hugs.');
   el('wizard', 'Wizard', 'round', '#ffe0cc', ['wizardHat', 'beard'], 'happy', 'smile', 'Knows 1,000 spells, mostly for snacks.');
   el('princess', 'Princess', 'round', '#ffe0cc', ['hairLong:#ffd36e', 'tiara'], 'wink', 'smile', 'Rules her castle with kindness and cake.');
+  el('witch', 'Witch', 'round', '#ffe0cc', ['hairLong:#9b7ad8', 'witchHat'], 'wink', 'smile', 'Rides a broom made of moonbeams and only brews sweet potions.');
   el('knight', 'Knight', 'round', '#cfd6e6', ['faceWindow:#ffe0cc', 'helmetSlit', 'plume'], 'big', 'smile', 'Brave and shiny, protects the cuddly kingdom.');
   el('mermaid', 'Mermaid', 'round', '#ffe0cc', ['hairLong:#ff8f8f', 'tailMermaid', 'starfishClip'], 'happy', 'smile', 'Sings with dolphins under the waves.');
   el('fairy', 'Fairy', 'round', '#ffe0cc', ['wingsFairy', 'hair:#ffa8d9', 'flowerCrown', 'sparkles'], 'wink', 'smile', 'Sprinkles pixie dust on sleepy flowers.', { scale: 0.88 });
@@ -163,6 +166,7 @@
   el('pancake', 'Pancakes', 'squat', '#f5c784', ['frosting:#ffcf5c', 'breadLines', 'cherry'], 'happy', 'open', 'A fluffy stack dripping with sweet honey.');
   el('pudding', 'Pudding', 'dome', '#ffe08a', ['frosting:#c98a4b', 'cherry'], 'happy', 'cat', 'A wobbly caramel pudding that jiggles when it giggles.');
   el('mochi', 'Mochi', 'blob', '#fff0f5', ['flowerTop:#ffb3cf', 'sparkles'], 'happy', 'cat', 'A sakura mochi: soft, squishy and stretchy. Mochi mochi!', { blush: '#ffb3c7' });
+  el('pumpkin', 'Pumpkin', 'blob', '#ffad5c', ['pumpkinRibs', 'pumpkinStem', 'cheeks'], 'happy', 'open', 'A round, cheery harvest pumpkin who loves moonlit patches.');
   el('onigiri', 'Onigiri', 'tri', '#ffffff', ['noriWrap', 'sesame'], 'happy', 'smile', 'A rice ball snuggled in a crunchy seaweed blanket. Itadakimasu!');
   // ---- space ----
   el('planet', 'Planet', 'round', '#c7a8ff', ['ring:#ffd98a'], 'big', 'smile', 'Wears its ring like a hula hoop.', { scale: 0.84 });
@@ -218,7 +222,8 @@
     ['milk', 'campfire', 'cocoa'], ['bread', 'honey', 'pancake'], ['star', 'ocean', 'starfish'], ['animal', 'wheat', 'hamster'],
     ['milk', 'egg', 'pudding'], ['animal', 'cactus', 'hedgehog'], ['life', 'rain', 'snail'], ['bee', 'lightbulb', 'firefly'],
     ['bear', 'tree', 'koala'], ['fish', 'wave', 'dolphin'], ['jellyfish', 'ocean', 'octopus'], ['rice', 'love', 'mochi'],
-    ['animal', 'ocean', 'otter'], ['bird', 'moon', 'bat'], ['animal', 'cloud', 'sheep'], ['rice', 'ocean', 'onigiri']
+    ['animal', 'ocean', 'otter'], ['bird', 'moon', 'bat'], ['animal', 'cloud', 'sheep'], ['rice', 'ocean', 'onigiri'],
+    ['garden', 'moon', 'pumpkin'], ['pumpkin', 'magic', 'witch'], ['cat', 'moon', 'blackcat'], ['animal', 'village', 'tanuki']
   ];
 
   const byId = {};

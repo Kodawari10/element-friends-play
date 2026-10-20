@@ -25,9 +25,9 @@
     unicorn: 'ユニコーン|yunikōn|', chick: 'ひよこ|hiyoko|', duck: 'あひる|ahiru|', owl: 'ふくろう|fukurō|', penguin: 'ペンギン|pengin|',
     phoenix: 'ふしちょう|fushichō|不死鳥', bee: 'はち|hachi|蜂', firefly: 'ほたる|hotaru|蛍', butterfly: 'ちょうちょ|chōcho|', whale: 'くじら|kujira|',
     crab: 'かに|kani|', jellyfish: 'くらげ|kurage|', starfish: 'ひとで|hitode|', dustbunny: 'わたぼこり|watabokori|', hamster: 'ハムスター|hamusutā|',
-    hedgehog: 'はりねずみ|harinezumi|', koala: 'コアラ|koara|', dolphin: 'いるか|iruka|', octopus: 'たこ|tako|', snail: 'かたつむり|katatsumuri|', otter: 'ラッコ|rakko|', bat: 'こうもり|kōmori|蝙蝠', sheep: 'ひつじ|hitsuji|羊',
+    hedgehog: 'はりねずみ|harinezumi|', koala: 'コアラ|koara|', dolphin: 'いるか|iruka|', octopus: 'たこ|tako|', snail: 'かたつむり|katatsumuri|', otter: 'ラッコ|rakko|', bat: 'こうもり|kōmori|蝙蝠', blackcat: 'くろねこ|kuroneko|黒猫', tanuki: 'たぬき|tanuki|狸', sheep: 'ひつじ|hitsuji|羊',
     love: 'あい|ai|愛', baby: 'あかちゃん|akachan|赤ちゃん', ghost: 'おばけ|obake|', ninja: 'にんじゃ|ninja|忍者', wizard: 'まほうつかい|mahōtsukai|魔法使い',
-    princess: 'おひめさま|ohimesama|お姫様', knight: 'きし|kishi|騎士', mermaid: 'にんぎょ|ningyo|人魚', fairy: 'ようせい|yōsei|妖精',
+    princess: 'おひめさま|ohimesama|お姫様', witch: 'まじょ|majo|魔女', knight: 'きし|kishi|騎士', mermaid: 'にんぎょ|ningyo|人魚', fairy: 'ようせい|yōsei|妖精',
     snowman: 'ゆきだるま|yukidaruma|雪だるま', astronaut: 'うちゅうひこうし|uchūhikōshi|宇宙飛行士', magic: 'まほう|mahō|魔法',
     happiness: 'しあわせ|shiawase|幸せ', brick: 'レンガ|renga|', house: 'いえ|ie|家', castle: 'おしろ|oshiro|お城', village: 'むら|mura|村',
     city: 'まち|machi|町', igloo: 'イグルー|igurū|', pyramid: 'ピラミッド|piramiddo|', robot: 'ロボット|robotto|', lightbulb: 'でんきゅう|denkyū|電球',
@@ -35,7 +35,7 @@
     snowglobe: 'スノードーム|sunōdōmu|', airplane: 'ひこうき|hikōki|飛行機', rocket: 'ロケット|roketto|', ufo: 'ユーフォー|yūfō|UFO',
     friedegg: 'めだまやき|medamayaki|目玉焼き', bread: 'パン|pan|', cake: 'ケーキ|kēki|', icecream: 'アイス|aisu|', sushi: 'すし|sushi|寿司',
     tea: 'おちゃ|ocha|お茶', boba: 'タピオカ|tapioka|', honey: 'はちみつ|hachimitsu|蜂蜜', candy: 'あめ|ame|飴', cottoncandy: 'わたあめ|wataame|綿あめ',
-    pie: 'アップルパイ|appurupai|', cocoa: 'ココア|kokoa|', pancake: 'パンケーキ|pankēki|', pudding: 'プリン|purin|', mochi: 'もち|mochi|餅', onigiri: 'おにぎり|onigiri|',
+    pie: 'アップルパイ|appurupai|', cocoa: 'ココア|kokoa|', pancake: 'パンケーキ|pankēki|', pudding: 'プリン|purin|', mochi: 'もち|mochi|餅', onigiri: 'おにぎり|onigiri|', pumpkin: 'かぼちゃ|kabocha|',
     planet: 'わくせい|wakusei|惑星', galaxy: 'ぎんが|ginga|銀河', comet: 'すいせい|suisei|彗星', alien: 'うちゅうじん|uchūjin|宇宙人',
     eclipse: 'にっしょく|nisshoku|日食', universe: 'うちゅう|uchū|宇宙'
   };
