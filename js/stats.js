@@ -40,6 +40,32 @@
     };
   }
 
+  // 🎖️ Mixer rank: a cute title that grows with how many friends you've found
+  const RANKS = [
+    { at: 0, emoji: '🌱', name: 'Sprout Mixer' },
+    { at: 0.1, emoji: '🫧', name: 'Bubbly Mixer' },
+    { at: 0.25, emoji: '🌈', name: 'Rainbow Alchemist' },
+    { at: 0.5, emoji: '⭐', name: 'Star Alchemist' },
+    { at: 0.75, emoji: '🌙', name: 'Moon Sage' },
+    { at: 1, emoji: '👑', name: 'Element Master' }
+  ];
+  function rankOf(found, total) {
+    const need = r => Math.ceil(r.at * total);
+    let i = 0; RANKS.forEach((r, k) => { if (total && found >= need(r)) i = k; });
+    const next = RANKS[i + 1];
+    return { index: i, emoji: RANKS[i].emoji, name: RANKS[i].name, next: next ? { emoji: next.emoji, name: next.name, left: Math.max(1, need(next) - found) } : null };
+  }
+  function rankHtml(s) {
+    const r = rankOf(s.found, s.total), pct = s.total ? Math.min(100, Math.round((s.found / s.total) * 100)) : 0;
+    const C = 2 * Math.PI * 26, off = C * (1 - pct / 100);
+    const nextTxt = r.next ? `${plural(r.next.left, 'more friend', 'more friends')} to become ${r.next.emoji} ${r.next.name}` : 'The highest rank there is! 🎉';
+    return `<div class="rank-ring" aria-hidden="true"><svg viewBox="0 0 64 64"><circle class="rank-track" cx="32" cy="32" r="26"/>` +
+      `<circle class="rank-fill" cx="32" cy="32" r="26" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="${C.toFixed(2)}" data-off="${off.toFixed(2)}"/></svg>` +
+      `<span class="rank-emoji">${r.emoji}</span></div>` +
+      `<div class="rank-txt"><span class="rank-k">🎖️ Mixer rank · ${pct}%</span><span class="rank-n" id="statsRankName">${esc(r.name)}</span><span class="rank-next">${esc(nextTxt)}</span></div>` +
+      `<span class="sr-only">Mixer rank: ${esc(r.name)}, ${pct} percent of friends found. ${esc(nextTxt)}.</span>`;
+  }
+
   function tile(emoji, value, label, extra) {
     return `<li class="stat-tile${extra ? ' ' + extra : ''}"><span class="stat-emoji" aria-hidden="true">${emoji}</span><span class="stat-val">${esc(value)}</span><span class="stat-lbl">${esc(label)}</span></li>`;
   }
@@ -62,6 +88,13 @@
     if (s.nicks) tiles.push(tile('🏷️', s.nicks, s.nicks === 1 ? 'nickname given' : 'nicknames given'));
     if (s.chain) tiles.push(tile('✦', s.chain, 'minted on Starknet', 'chain'));
     document.getElementById('statsGrid').innerHTML = tiles.join('');
+    const rk = document.getElementById('statsRank');
+    if (rk) {
+      rk.innerHTML = rankHtml(s); rk.dataset.rank = String(rankOf(s.found, s.total).index);
+      const fill = rk.querySelector('.rank-fill');
+      // fill the ring on the next frame so it gently sweeps round (CSS skips the sweep in Gentle mode / reduced motion)
+      requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.strokeDashoffset = fill.dataset.off; }));
+    }
 
     const fav = document.getElementById('statsTop');
     if (s.top) {
@@ -86,7 +119,7 @@
     render();
     G.ui.closeModal('menu');
     G.ui.openModal('stats');
-    G.ui.announce(`My stats. ${G.found.size} of ${D.elements.length} friends found.`);
+    G.ui.announce(`My stats. ${G.found.size} of ${D.elements.length} friends found. Mixer rank: ${rankOf(G.found.size, D.elements.length).name}.`);
     document.dispatchEvent(new CustomEvent('ef:stats'));
   }
 
@@ -97,7 +130,7 @@
       const b = ev.target.closest('[data-open]'); if (!b || !G.found.has(b.dataset.open)) return;
       G.openDetail(b.dataset.open);
     });
-    window.EF_STATS = { open: openStats, snapshot: () => snapshot(), render };
+    window.EF_STATS = { open: openStats, snapshot: () => snapshot(), render, rank: (f, t) => rankOf(f, t) };
   }
   if (window.EF_GAME) init(); else document.addEventListener('ef:ready', init, { once: true });
 })();

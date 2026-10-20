@@ -1393,3 +1393,21 @@ html[data-theme="night"] .stat-tile:nth-child(3n) { background: #2c2a52; box-sha
 html[data-theme="night"] .stat-tile.big { background: linear-gradient(120deg, #4a2c55, #463a3a); box-shadow: inset 0 0 0 2px #6b4a7e; }
 html[data-theme="night"] .stats-top-btn { background: linear-gradient(120deg, #463d2a, #45294a); box-shadow: inset 0 0 0 2px #7a6630; color: var(--ink); }
 html[data-theme="night"] .stats-top-k { color: #ffd36b; }
+
+/* 🎖️ Mixer rank ring in My stats */
+.stats-rank { display: flex; align-items: center; gap: 14px; margin: 12px 0 0; padding: 10px 14px; border-radius: 22px; background: linear-gradient(120deg, #fff0f7, #eef7ff); box-shadow: inset 0 0 0 2px #ffd3e6; }
+.rank-ring { position: relative; width: 68px; height: 68px; flex: none; }
+.rank-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.rank-track { fill: #fff; stroke: #ffe1ee; stroke-width: 8; }
+.rank-fill { fill: none; stroke: #ff7fb0; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.1s cubic-bezier(.3, 1.3, .5, 1); }
+.stats-rank[data-rank="5"] .rank-fill { stroke: #ffc531; }
+.rank-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 28px; }
+.rank-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.rank-k { font-size: 11px; font-weight: 800; color: #d4528a; }
+.rank-n { font-size: 18px; font-weight: 900; color: var(--ink); }
+.rank-next { font-size: 12px; font-weight: 700; color: var(--ink2); }
+html.calm .rank-fill { transition: none; }
+@media (prefers-reduced-motion: reduce) { .rank-fill { transition: none; } }
+html[data-theme="night"] .stats-rank { background: linear-gradient(120deg, #43294f, #2a3352); box-shadow: inset 0 0 0 2px #6b4a7e; }
+html[data-theme="night"] .rank-track { fill: #2c2440; stroke: #4a3b6e; }
+html[data-theme="night"] .rank-k { color: #ff9cc6; }
