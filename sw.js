@@ -1,5 +1,5 @@
 /* Offline cache for Element Friends */
-const CACHE = 'element-friends-v54';
+const CACHE = 'element-friends-v55';
 const FILES = ['./', './index.html', './css/style.css', './js/data.js', './js/art.js', './js/audio.js', './js/sticker.js', './js/game.js', './js/daily.js', './js/welcome.js', './js/japanese.js', './js/omikuji.js', './js/achievements.js', './js/weather.js', './js/costumes.js', './js/chain-ids.js', './js/backup.js', './js/install.js', './js/starknet-config.js', './js/starknet-abi.js', './js/starknet.js', './js/vendor/get-starknet-core.js',
   './js/vendor/starkzap.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });

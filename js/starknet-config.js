@@ -13,7 +13,7 @@ window.EF_STARKNET_CONFIG = {
   networkName: 'Sepolia testnet',
   chainId: '0x534e5f5345504f4c4941',          // SN_SEPOLIA
   rpcUrl: 'https://starknet-sepolia.drpc.org', // any Starknet JSON-RPC (v0.8+) endpoint for Sepolia
-  contractAddress: '',                        // <- paste the deployed ElementFriends address here
+  contractAddress: '0x018dddbcb447db0dc705e8587f425c64e5921c306f121fa47275cc486c5f6545', // ElementFriends on Sepolia (deployed 2026-10-20)
   explorerTx: 'https://sepolia.voyager.online/tx/',
   explorerContract: 'https://sepolia.voyager.online/contract/',
   explorerNft: 'https://sepolia.voyager.online/nft/',     // + <contract>/<tokenId>: a friend's collectible page
