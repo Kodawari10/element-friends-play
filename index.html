@@ -105,6 +105,10 @@
         <button type="button" class="btn filter-chip shiny-chip" role="radio" aria-checked="false" data-filter="shiny" hidden>✨ Shiny <b class="n"></b></button>
         <button type="button" class="btn filter-chip chain-filter" role="radio" aria-checked="false" data-filter="chain" hidden><span aria-hidden="true">✦</span> On Starknet <b class="n"></b></button>
       </div>
+      <label class="search book-search" id="bookSearchWrap">
+        <i data-icon="search" aria-hidden="true"></i>
+        <input id="bookSearch" type="search" placeholder="Find a friend… (name, nickname or かな)" aria-label="Find a friend in your collection by name, nickname or Japanese name" autocomplete="off" enterkeyhint="search">
+      </label>
       <div class="book-grid" id="bookGrid" role="list"></div>
       <p class="book-empty" id="bookEmpty" hidden></p>
     </div>
@@ -363,6 +367,7 @@
         <li>Cleared the playfield by accident? Tap <b>↩ Undo</b> right after (or press Ctrl/⌘+Z) to bring your friends back.</li>
         <li><b>Double-tap</b> (or double-click) a friend on the playfield to make a <b>twin</b>, then mix the pair: some friends love meeting themselves! Keyboard: focus a friend and press <b>D</b>.</li>
         <li>In a friend's page, tap <b>‹ ›</b>, swipe sideways or press the <b>← →</b> arrow keys to flip through your found friends.</li>
+        <li>Looking for someone? Type in the <b>🔍 Find a friend</b> box in the <b>Collection</b> to show only the friends you've found whose name, nickname or Japanese name matches (it works together with the filter chips, and press <b>/</b> to jump there).</li>
         <li>Can't decide who to visit? Tap <b>🎲 Surprise</b> at the top of the <b>Collection</b> and a random friend you've found pops open (it follows the filter you picked, like ★ Legendary or 💗 Besties).</li>
         <li>In the <b>Collection</b>, tap <b>💖 Found</b>, <b>❔ Missing</b> or <b>★ Legendary</b> to see just those friends.</li>
         <li>In the <b>Collection</b>, a missing friend with a little <b>🌱 sprout</b> is <b>within reach</b>: you already have both friends you need to make it. Which two? That's for you to find out!</li>

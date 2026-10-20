@@ -700,6 +700,7 @@
     // the ✦ On Starknet chip only shows up while a wallet with minted friends is connected
     const chainChip = document.querySelector('#bookFilter [data-filter="chain"]'); if (chainChip) chainChip.hidden = !counts.chain;
     if (bookFilter === 'chain' && !counts.chain) bookFilter = 'all';
+    bookQuery = ''; $('#bookSearch').value = '';
     applyBookFilter(bookFilter, false);
     openModal('book');
     document.dispatchEvent(new CustomEvent('ef:book'));
@@ -712,6 +713,27 @@
   }
   // Collection filter chips (session only, nothing saved).
   let bookFilter = 'all';
+  // 🔍 Find a friend: Collection search over found friends only (name, nickname, Japanese kana/romaji/kanji). Never saved.
+  let bookQuery = '';
+  const fold = s => String(s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  function bookMatches(id) {
+    if (!bookQuery) return true;
+    if (!found.has(id)) return false;
+    const e = D.byId[id], w = window.EF_JP && window.EF_JP.word ? window.EF_JP.word(id) : null;
+    return [e.name, nickOf(id), w && w.kana, w && w.romaji, w && w.kanji].some(t => t && fold(t).includes(bookQuery));
+  }
+  let searchSaid = 0;
+  function searchBook(q, speak) {
+    bookQuery = fold(q);
+    const inp = $('#bookSearch'); if (inp && inp.value !== q && document.activeElement !== inp) inp.value = q || '';
+    const shown = applyBookFilter(bookFilter, false);
+    if (speak) {
+      clearTimeout(searchSaid);
+      searchSaid = setTimeout(() => announce(bookQuery ? (shown ? `${shown} ${shown === 1 ? 'friend matches' : 'friends match'} “${q.trim()}”` : `No found friend matches “${q.trim()}”`) : `Showing ${shown} ${FILTER_NAMES[bookFilter]}`), 450);
+    }
+    document.dispatchEvent(new CustomEvent('ef:booksearch', { detail: { query: bookQuery, shown } }));
+    return shown;
+  }
   // ✦ On Starknet chip: the optional Starknet layer tells us which friends this wallet has minted (never saved here).
   let chainSet = new Set();
   function chainFriends() { return D.elements.filter(e => chainSet.has(e.id) && found.has(e.id)).map(e => e.id); }
@@ -730,11 +752,11 @@
     let shown = 0;
     $('#bookGrid').querySelectorAll('.book-cell').forEach(c => {
       const locked = c.classList.contains('locked'), fin = c.classList.contains('final');
-      const vis = mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen')) || (mode === 'chain' && !locked && chainSet.has(c.dataset.id));
+      const vis = bookMatches(c.dataset.id) && (mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen')) || (mode === 'chain' && !locked && chainSet.has(c.dataset.id)));
       c.hidden = !vis; if (vis) shown++;
     });
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { const on = c.dataset.filter === mode; c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); c.tabIndex = on ? 0 : -1; });
-    const empty = $('#bookEmpty'); empty.hidden = shown > 0; empty.textContent = shown ? '' : (FILTER_EMPTY[mode] || 'Nobody here yet!');
+    const empty = $('#bookEmpty'); empty.hidden = shown > 0; empty.textContent = shown ? '' : bookQuery ? `No found friend called “${$('#bookSearch').value.trim()}” here yet 🔍 Keep mixing, or try another name!` : (FILTER_EMPTY[mode] || 'Nobody here yet!');
     $('#bookGrid').scrollTop = 0;
     if (speak) {
       announce(`Showing ${shown} ${FILTER_NAMES[mode]}`);
@@ -744,6 +766,11 @@
     }
     return shown;
   }
+  $('#bookSearch').addEventListener('input', ev => searchBook(ev.target.value, true));
+  $('#bookSearch').addEventListener('keydown', ev => {
+    if (ev.key === 'Escape' && ev.target.value) { ev.preventDefault(); ev.stopPropagation(); ev.target.value = ''; searchBook('', true); }
+    else if (ev.key === 'Enter') { ev.preventDefault(); const first = [...$('#bookGrid').querySelectorAll('.book-cell:not([hidden]):not(.locked)')][0]; if (first && bookQuery) first.click(); }
+  });
   $('#bookFilter').addEventListener('click', ev => { const c = ev.target.closest('.filter-chip'); if (c) applyBookFilter(c.dataset.filter, true); });
   $('#bookFilter').addEventListener('keydown', ev => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(ev.key)) return;
@@ -1436,6 +1463,7 @@
     if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.repeat || typing()) return;
     const top = modalStack[modalStack.length - 1];
     if (ev.key === '?') { ev.preventDefault(); if (top === 'keys') closeModal('keys'); else if (!modalStack.length || top === 'menu' || top === 'howto') { if (top === 'howto') closeModal('howto'); openKeys(); } return; }
+    if (ev.key === '/' && top === 'book') { ev.preventDefault(); const s = $('#bookSearch'); s.focus(); s.select(); return; }
     if (modalStack.length) return;
     const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
     if (k === '/') { ev.preventDefault(); const s = $('#search'); s.focus(); s.select(); }
@@ -1701,7 +1729,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, searchBook: q => searchBook(q || '', false), bookQuery: () => bookQuery, setChainFriends, chainFriends,
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }
