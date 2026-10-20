@@ -25,7 +25,9 @@
   const cartridgeOn = !!(C.cartridge && C.cartridge.enabled !== false);
 
   function loadCs() { try { return JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { return {}; } }
-  function saveCs() { cs.minted = [...minted]; try { localStorage.setItem(KEY, JSON.stringify(cs)); } catch (e) { /* ignore */ } }
+  function saveCs() { cs.minted = [...minted]; try { localStorage.setItem(KEY, JSON.stringify(cs)); } catch (e) { /* ignore */ } pushChain(); }
+  // tell the Collection which friends this wallet has minted (feeds its ✦ On Starknet chip)
+  function pushChain() { try { if (G && G.setChainFriends) G.setChainFriends(address ? [...minted] : []); } catch (e) { /* ignore */ } }
   const short = a => a ? a.slice(0, 6) + '…' + a.slice(-4) : '';
   const hex = n => '0x' + BigInt(n).toString(16);
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -580,6 +582,7 @@
   $('#revealMint').addEventListener('click', async () => { if (!address) { openPicker(); return; } await mint([revealId], $('#revealMintStatus')); if (minted.has(revealId)) $('#revealMint').hidden = true; });
 
   function decorate() {
+    pushChain();
     document.querySelectorAll('.book-cell').forEach((c, i) => {
       const e = D.elements[i]; const on = e && minted.has(e.id);
       c.classList.toggle('onchain', !!on);

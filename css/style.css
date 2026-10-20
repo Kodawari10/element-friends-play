@@ -153,6 +153,9 @@ body.drag-board .drawer.over .trash { background: #ffc9da; }
 .filter-chip.pop { animation: sortPop .32s ease; }
 .filter-chip.shiny-chip.active, .filter-chip.shiny-chip[aria-checked="true"] { background: linear-gradient(120deg, #ffd6ec, #fff1b8, #d4f5ff, #e9d9ff); color: #8a3f78; }
 .filter-chip[hidden] { display: none; }
+.filter-chip.chain-filter { color: #6a55c9; }
+.filter-chip.chain-filter.active, .filter-chip.chain-filter[aria-checked="true"] { background: linear-gradient(140deg, #e6ddff, #d9ecff); color: #4f3db0; box-shadow: 0 3px 0 #c8bdf3, inset 0 0 0 2px #cbbcff; }
+.filter-chip.chain-filter.active .n { background: #8f7cf7; color: #fff; }
 .book-empty { text-align: center; color: var(--ink2); font-weight: 800; padding: 24px 12px; margin: 0; }
 .book-cell[hidden] { display: none; }
 @media (prefers-reduced-motion: reduce) { .filter-chip.pop { animation: none; } }
@@ -509,6 +512,9 @@ html[data-theme="night"] .filter-chip .n { background: #3d3160; color: #e2c6ff; 
 html[data-theme="night"] .filter-chip.shiny-chip.active, html[data-theme="night"] .filter-chip.shiny-chip[aria-checked="true"] { background: linear-gradient(120deg, #6a3f86, #4a5a8a, #3f6a7a, #5a3f86); color: #fff; }
 html[data-theme="night"] .filter-chip.active, html[data-theme="night"] .filter-chip[aria-checked="true"] { background: linear-gradient(160deg, #5a3f86, #3f3a7a); color: #fff; box-shadow: 0 3px 0 #17112a, inset 0 0 0 2px #8a6cc4; }
 html[data-theme="night"] .filter-chip.active .n { background: #ff9fd2; color: #2a1f44; }
+html[data-theme="night"] .filter-chip.chain-filter { color: #cdbfff; }
+html[data-theme="night"] .filter-chip.chain-filter.active, html[data-theme="night"] .filter-chip.chain-filter[aria-checked="true"] { background: linear-gradient(140deg, #4a3f96, #2f4a7a); color: #fff; box-shadow: 0 3px 0 #17112a, inset 0 0 0 2px #8f7cf7; }
+html[data-theme="night"] .filter-chip.chain-filter.active .n { background: #b9a6ff; color: #231a40; }
 html[data-theme="night"] .sort-btn { background: #2f2648; color: #e2c6ff; box-shadow: 0 3px 0 #17112a, inset 0 0 0 2px #4a3a6e; }
 html[data-theme="night"] .inv-item:hover { background: #2f2648; }
 html[data-theme="night"] .inv-item .lbl,

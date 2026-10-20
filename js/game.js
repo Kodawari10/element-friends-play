@@ -646,26 +646,39 @@
     const finals = D.elements.filter(e => e.final), ff = finals.filter(e => found.has(e.id)).length;
     $('#bookBar').style.width = (found.size / TOTAL * 100) + '%';
     $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★`;
-    const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length };
+    const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length, chain: chainFriends().length };
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { c.querySelector('.n').textContent = counts[c.dataset.filter]; });
     // the ✨ Shiny chip only shows up once you've met a shiny friend
     const shinyChip = document.querySelector('#bookFilter [data-filter="shiny"]'); if (shinyChip) shinyChip.hidden = !counts.shiny;
     if (bookFilter === 'shiny' && !counts.shiny) bookFilter = 'all';
+    // the ✦ On Starknet chip only shows up while a wallet with minted friends is connected
+    const chainChip = document.querySelector('#bookFilter [data-filter="chain"]'); if (chainChip) chainChip.hidden = !counts.chain;
+    if (bookFilter === 'chain' && !counts.chain) bookFilter = 'all';
     applyBookFilter(bookFilter, false);
     openModal('book');
     document.dispatchEvent(new CustomEvent('ef:book'));
   }
   // Collection filter chips (session only, nothing saved).
   let bookFilter = 'all';
-  const FILTER_NAMES = { all: 'all friends', found: 'found friends', missing: 'missing friends', legendary: 'legendary friends', faves: 'best friends', shiny: 'shiny friends' };
-  const FILTER_EMPTY = { found: 'No friends yet. Mix two friends to meet someone new! ✨', missing: 'You found everyone! Every friend is home 💖', legendary: '', faves: 'No best friends yet. Open a friend and tap the 🤍 heart to make them a bestie!', shiny: 'No shiny friends yet. Keep mixing: now and then a friend comes out sparkly! ✨' };
+  // ✦ On Starknet chip: the optional Starknet layer tells us which friends this wallet has minted (never saved here).
+  let chainSet = new Set();
+  function chainFriends() { return D.elements.filter(e => chainSet.has(e.id) && found.has(e.id)).map(e => e.id); }
+  function setChainFriends(ids) {
+    chainSet = new Set((ids || []).filter(id => typeof id === 'string' && D.byId[id]));
+    const chip = document.querySelector('#bookFilter [data-filter="chain"]'); if (!chip) return;
+    const n = chainFriends().length; chip.hidden = !n; chip.querySelector('.n').textContent = n;
+    if ($('#book').hidden) { if (!n && bookFilter === 'chain') bookFilter = 'all'; return; }
+    if (bookFilter === 'chain') applyBookFilter(n ? 'chain' : 'all', !n);
+  }
+  const FILTER_NAMES = { all: 'all friends', found: 'found friends', missing: 'missing friends', legendary: 'legendary friends', faves: 'best friends', shiny: 'shiny friends', chain: 'friends minted on Starknet' };
+  const FILTER_EMPTY = { found: 'No friends yet. Mix two friends to meet someone new! ✨', missing: 'You found everyone! Every friend is home 💖', legendary: '', faves: 'No best friends yet. Open a friend and tap the 🤍 heart to make them a bestie!', shiny: 'No shiny friends yet. Keep mixing: now and then a friend comes out sparkly! ✨', chain: 'Nothing minted yet. Open a friend and tap ✦ Mint on Starknet to keep them forever!' };
   function applyBookFilter(mode, speak) {
     if (!FILTER_NAMES[mode]) mode = 'all';
     bookFilter = mode;
     let shown = 0;
     $('#bookGrid').querySelectorAll('.book-cell').forEach(c => {
       const locked = c.classList.contains('locked'), fin = c.classList.contains('final');
-      const vis = mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen'));
+      const vis = mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen')) || (mode === 'chain' && !locked && chainSet.has(c.dataset.id));
       c.hidden = !vis; if (vis) shown++;
     });
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { const on = c.dataset.filter === mode; c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); c.tabIndex = on ? 0 : -1; });
@@ -690,7 +703,7 @@
   $('#bookFilter').addEventListener('animationend', ev => ev.target.classList.remove('pop'));
   // ---------- flip through friends (detail view) ----------
   function flipList(id) {
-    let list = D.elements.filter(e => found.has(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id)) && (bookFilter !== 'shiny' || state.shinies.includes(e.id))).map(e => e.id);
+    let list = D.elements.filter(e => found.has(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id)) && (bookFilter !== 'shiny' || state.shinies.includes(e.id)) && (bookFilter !== 'chain' || chainSet.has(e.id))).map(e => e.id);
     if (!list.includes(id)) list = D.elements.filter(e => found.has(e.id)).map(e => e.id);
     return list;
   }
@@ -1565,7 +1578,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }
