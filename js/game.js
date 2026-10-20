@@ -795,6 +795,7 @@
     if (hiding) { const p = document.createElement('p'); p.className = 'muted hop-hiding'; p.textContent = `✨ ${hiding} more ${hiding === 1 ? 'friend is' : 'friends are'} still hiding with ${e.name}!`; box.appendChild(p); }
     $('#petTip').textContent = 'Tap to pet 💕';
     $('#detailSticker').setAttribute('aria-label', `Save a sticker picture of ${e.name}`);
+    $('#detailPlay').setAttribute('aria-label', `Bring ${e.name} to the playfield`);
     applyFaveBtn(id);
     updateFlip(id);
     openModal('detail');
@@ -960,6 +961,24 @@
     }
   }
   $('#detailSticker').addEventListener('click', () => { SND.unlock(); saveSticker(); });
+
+  // ---------- bring to playfield 🧺 ----------
+  // From a friend's card, drop that friend straight onto the playfield (closes the card and the Collection).
+  function bringToBoard(id) {
+    if (!id || !found.has(id) || !D.byId[id]) return null;
+    ['detail', 'book'].forEach(m => { if (!$('#' + m).hidden) closeModal(m); });
+    clearSel(); markSeen(id);
+    const [x, y] = freeSpot(board.clientWidth / 2, board.clientHeight * .45);
+    const p = makePiece(id, x, y);
+    if (!still()) { p.classList.remove('pop'); p.classList.add('arrived'); setTimeout(() => p.classList.remove('arrived'), 1600); }
+    SND.play('drop'); buzz(10); save();
+    const name = D.byId[id].name, msg = `${name} hopped onto the playfield! 🧺 Mix them with a friend.`;
+    toast(msg, 2600); announce(msg);
+    setTimeout(() => { if (p.isConnected) p.focus({ preventScroll: true }); }, 60);
+    document.dispatchEvent(new CustomEvent('ef:bring', { detail: { id } }));
+    return p;
+  }
+  $('#detailPlay').addEventListener('click', () => { SND.unlock(); bringToBoard($('#detailArt').dataset.id); });
 
   // ---------- group photo 📸: a class photo of the friends on the playfield ----------
   const PHOTO_MAX = 12;
@@ -1604,7 +1623,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }
