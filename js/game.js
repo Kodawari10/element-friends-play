@@ -784,6 +784,34 @@
   });
   $('#detail .sheet').addEventListener('pointercancel', () => { swipe = null; });
   $('#detail .sheet').addEventListener('click', ev => { if (Date.now() - swiped < 400) { ev.stopPropagation(); ev.preventDefault(); swiped = 0; } }, true);
+  // 🎲 Surprise me: open a random found friend's card (follows the Collection filter, never the same friend twice in a row)
+  let lastSurprise = '';
+  function surpriseFriend(rand) {
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const all = D.elements.filter(e => found.has(e.id)).map(e => e.id);
+    const filtered = all.filter(id => (bookFilter !== 'legendary' || D.byId[id].final) && (bookFilter !== 'faves' || isFave(id)) && (bookFilter !== 'shiny' || state.shinies.includes(id)) && (bookFilter !== 'chain' || chainSet.has(id)));
+    const list = filtered.length ? filtered : all;
+    if (!list.length) return null;
+    const cur = !$('#detail').hidden ? $('#detailArt').dataset.id : '';
+    const fresh = list.filter(id => id !== lastSurprise && id !== cur);
+    const pool = fresh.length ? fresh : list;
+    const id = pool[Math.min(pool.length - 1, Math.floor(r() * pool.length))];
+    lastSurprise = id;
+    const btn = $('#btnSurprise');
+    if (btn && !still()) { btn.classList.remove('roll'); void btn.offsetWidth; btn.classList.add('roll'); }
+    SND.play('select'); buzz(10);
+    openDetail(id);
+    const sheet = $('#detail .sheet');
+    sheet.classList.remove('flip-l', 'flip-r');
+    if (!still()) { void sheet.offsetWidth; sheet.classList.add('flip-r'); }
+    const e = D.byId[id], nick = nickOf(id);
+    const msg = `🎲 Surprise! It's ${nick ? `${nick} the ${e.name}` : e.name}${e.final ? ' ★' : ''}!`;
+    toast(msg, 2200); announce(msg.replace('🎲 ', ''));
+    document.dispatchEvent(new CustomEvent('ef:surprise', { detail: { id, filter: bookFilter } }));
+    return id;
+  }
+  $('#btnSurprise').addEventListener('click', () => { SND.unlock(); surpriseFriend(); });
+  $('#btnSurprise').addEventListener('animationend', ev => ev.currentTarget.classList.remove('roll'));
   function updateFlip(id) {
     const list = flipList(id), many = list.length > 1;
     ['#detailPrev', '#detailNext'].forEach(s => { $(s).hidden = !many; });
@@ -1673,7 +1701,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }

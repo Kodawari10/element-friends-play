@@ -86,7 +86,10 @@
     <div class="sheet">
       <header class="sheet-head">
         <h2 id="bookTitle">Friend Collection</h2>
-        <button class="btn icon close" data-close aria-label="Close collection"><i data-icon="x"></i></button>
+        <div class="sheet-head-actions">
+          <button type="button" class="btn surprise-btn" id="btnSurprise" aria-label="Surprise me: open a random friend you've found" title="Surprise me! 🎲"><span class="dice" aria-hidden="true">🎲</span><span class="surprise-lbl">Surprise</span></button>
+          <button class="btn icon close" data-close aria-label="Close collection"><i data-icon="x"></i></button>
+        </div>
       </header>
       <div class="progress-wrap" id="bookProgress" role="progressbar" aria-label="Collection progress" aria-valuemin="0">
         <div class="progress" aria-hidden="true"><div class="bar" id="bookBar"></div></div>
@@ -360,6 +363,7 @@
         <li>Cleared the playfield by accident? Tap <b>↩ Undo</b> right after (or press Ctrl/⌘+Z) to bring your friends back.</li>
         <li><b>Double-tap</b> (or double-click) a friend on the playfield to make a <b>twin</b>, then mix the pair: some friends love meeting themselves! Keyboard: focus a friend and press <b>D</b>.</li>
         <li>In a friend's page, tap <b>‹ ›</b>, swipe sideways or press the <b>← →</b> arrow keys to flip through your found friends.</li>
+        <li>Can't decide who to visit? Tap <b>🎲 Surprise</b> at the top of the <b>Collection</b> and a random friend you've found pops open (it follows the filter you picked, like ★ Legendary or 💗 Besties).</li>
         <li>In the <b>Collection</b>, tap <b>💖 Found</b>, <b>❔ Missing</b> or <b>★ Legendary</b> to see just those friends.</li>
         <li>In the <b>Collection</b>, a missing friend with a little <b>🌱 sprout</b> is <b>within reach</b>: you already have both friends you need to make it. Which two? That's for you to find out!</li>
         <li>Every friend card counts how many times you've made that friend <span aria-hidden="true">🧪</span>, with a little cheer on your 10th, 25th, 50th and 100th.</li>
