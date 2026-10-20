@@ -646,23 +646,26 @@
     const finals = D.elements.filter(e => e.final), ff = finals.filter(e => found.has(e.id)).length;
     $('#bookBar').style.width = (found.size / TOTAL * 100) + '%';
     $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★`;
-    const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length };
+    const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length };
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { c.querySelector('.n').textContent = counts[c.dataset.filter]; });
+    // the ✨ Shiny chip only shows up once you've met a shiny friend
+    const shinyChip = document.querySelector('#bookFilter [data-filter="shiny"]'); if (shinyChip) shinyChip.hidden = !counts.shiny;
+    if (bookFilter === 'shiny' && !counts.shiny) bookFilter = 'all';
     applyBookFilter(bookFilter, false);
     openModal('book');
     document.dispatchEvent(new CustomEvent('ef:book'));
   }
   // Collection filter chips (session only, nothing saved).
   let bookFilter = 'all';
-  const FILTER_NAMES = { all: 'all friends', found: 'found friends', missing: 'missing friends', legendary: 'legendary friends', faves: 'best friends' };
-  const FILTER_EMPTY = { found: 'No friends yet. Mix two friends to meet someone new! ✨', missing: 'You found everyone! Every friend is home 💖', legendary: '', faves: 'No best friends yet. Open a friend and tap the 🤍 heart to make them a bestie!' };
+  const FILTER_NAMES = { all: 'all friends', found: 'found friends', missing: 'missing friends', legendary: 'legendary friends', faves: 'best friends', shiny: 'shiny friends' };
+  const FILTER_EMPTY = { found: 'No friends yet. Mix two friends to meet someone new! ✨', missing: 'You found everyone! Every friend is home 💖', legendary: '', faves: 'No best friends yet. Open a friend and tap the 🤍 heart to make them a bestie!', shiny: 'No shiny friends yet. Keep mixing: now and then a friend comes out sparkly! ✨' };
   function applyBookFilter(mode, speak) {
     if (!FILTER_NAMES[mode]) mode = 'all';
     bookFilter = mode;
     let shown = 0;
     $('#bookGrid').querySelectorAll('.book-cell').forEach(c => {
       const locked = c.classList.contains('locked'), fin = c.classList.contains('final');
-      const vis = mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave'));
+      const vis = mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen'));
       c.hidden = !vis; if (vis) shown++;
     });
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { const on = c.dataset.filter === mode; c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); c.tabIndex = on ? 0 : -1; });
@@ -680,14 +683,14 @@
   $('#bookFilter').addEventListener('keydown', ev => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(ev.key)) return;
     ev.preventDefault();
-    const chips = [...document.querySelectorAll('#bookFilter .filter-chip')], i = chips.findIndex(c => c.dataset.filter === bookFilter);
+    const chips = [...document.querySelectorAll('#bookFilter .filter-chip')].filter(c => !c.hidden), i = chips.findIndex(c => c.dataset.filter === bookFilter);
     const j = ev.key === 'Home' ? 0 : ev.key === 'End' ? chips.length - 1 : (i + ((ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 1) + chips.length) % chips.length;
     applyBookFilter(chips[j].dataset.filter, true); chips[j].focus();
   });
   $('#bookFilter').addEventListener('animationend', ev => ev.target.classList.remove('pop'));
   // ---------- flip through friends (detail view) ----------
   function flipList(id) {
-    let list = D.elements.filter(e => found.has(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id))).map(e => e.id);
+    let list = D.elements.filter(e => found.has(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id)) && (bookFilter !== 'shiny' || state.shinies.includes(e.id))).map(e => e.id);
     if (!list.includes(id)) list = D.elements.filter(e => found.has(e.id)).map(e => e.id);
     return list;
   }
