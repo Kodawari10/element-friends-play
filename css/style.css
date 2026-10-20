@@ -1296,3 +1296,21 @@ html[data-theme="night"] .book-cell.locked.reach .lbl { color: #8fd8a8; }
 html[data-theme="night"] .book-cell.locked.reach { animation-name: reachGlowNight; }
 html.calm[data-theme="night"] .book-cell.locked.reach { animation: none; }
 @media (prefers-reduced-motion: reduce) { html[data-theme="night"] .book-cell.locked.reach { animation: none; } }
+
+/* ⭐ milestone stars on the collection bar */
+.progress-wrap { position: relative; margin: 6px 12px 6px 0; }
+.progress-wrap .progress { margin: 0; }
+.milestones { position: absolute; inset: 0; pointer-events: none; }
+.milestones .ms { position: absolute; top: 50%; transform: translate(-50%, -50%) scale(.85); font-size: 17px; line-height: 1; filter: grayscale(1) brightness(.9) drop-shadow(0 0 1px #fff); opacity: .6; transition: transform .3s, opacity .3s, filter .3s; }
+.milestones .ms.end { transform: translate(-70%, -50%) scale(.85); }
+.milestones .ms.lit { filter: drop-shadow(0 0 3px rgba(255, 200, 60, .9)); opacity: 1; transform: translate(-50%, -50%) scale(1.1); animation: msTwinkle 2.6s ease-in-out infinite; }
+.milestones .ms.lit.end { transform: translate(-70%, -50%) scale(1.1); animation-name: msTwinkleEnd; }
+.milestones .ms.lit:nth-child(2) { animation-delay: .4s; } .milestones .ms.lit:nth-child(3) { animation-delay: .8s; } .milestones .ms.lit:nth-child(4) { animation-delay: 1.2s; }
+@keyframes msTwinkle { 0%, 100% { transform: translate(-50%, -50%) scale(1.1) rotate(0); } 50% { transform: translate(-50%, -50%) scale(1.25) rotate(12deg); } }
+@keyframes msTwinkleEnd { 0%, 100% { transform: translate(-70%, -50%) scale(1.1) rotate(0); } 50% { transform: translate(-70%, -50%) scale(1.25) rotate(12deg); } }
+html[data-theme="night"] .milestones .ms:not(.lit) { filter: grayscale(1) brightness(.9); opacity: .4; }
+html.calm .milestones .ms.lit { animation: none; }
+@media (prefers-reduced-motion: reduce) { .milestones .ms.lit { animation: none; } }
+.reveal-milestone { display: block; width: fit-content; margin: 0 auto 4px; padding: 3px 12px; border-radius: 99px; background: linear-gradient(90deg, #fff6c9, #ffe9f4); border: 2px solid #ffd36b; color: #b07a00; font-weight: 900; font-size: 14px; }
+.reveal-milestone[hidden] { display: none; }
+html[data-theme="night"] .reveal-milestone { background: #3a3158; border-color: #e6c46a; color: #ffe08a; }

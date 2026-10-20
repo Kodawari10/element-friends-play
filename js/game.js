@@ -542,12 +542,13 @@
   // ---------- discovery ----------
   const revealQueue = [];
   function discover(id, a, b) {
+    const ms = milestoneCrossed(found.size, found.size + 1);
     found.add(id); state.found.push(id); state.seen[id] = false; state.met[id] = todayKey();
     noteWallUnlocks(found.size - 1);
     const c = bumpCombo(); save();
     renderInventory(); updateCounter(true);
     announce(`New friend discovered: ${D.byId[id].name}!` + (c.n >= 2 ? ` Discovery combo ${c.n}!` : ''));
-    revealQueue.push({ id, a, b, combo: c.n, best: c.best });
+    revealQueue.push({ id, a, b, combo: c.n, best: c.best, ms });
     if (revealQueue.length === 1) setTimeout(showReveal, 380);
   }
   function showReveal() {
@@ -560,11 +561,14 @@
     $('#revealRecipe').textContent = `${D.byId[item.a].name} + ${D.byId[item.b].name} = ${e.name}`;
     m.classList.toggle('legendary', !!e.final);
     const rc = $('#revealCombo');
+    const rm = $('#revealMilestone');
+    if (item.ms) { rm.hidden = false; rm.textContent = `⭐ ${item.ms.text} ${item.ms.at} of ${TOTAL} friends!`; } else { rm.hidden = true; rm.textContent = ''; }
     if (item.combo >= 2) { rc.hidden = false; rc.textContent = `🌟 Combo ×${item.combo}!` + (item.best ? ' New best!' : ''); } else rc.hidden = true;
     openModal('reveal');
     document.dispatchEvent(new CustomEvent('ef:reveal', { detail: { id: item.id } }));
     if (e.final) { SND.play('legendary'); confetti(110); } else { SND.play('discover'); confetti(36 + Math.min(4, Math.max(0, item.combo - 1)) * 12); }
     if (item.combo >= 2) setTimeout(() => SND.combo(item.combo), 650);
+    if (item.ms) { setTimeout(() => { confetti(48); announce(`Milestone star! ${item.ms.text} ${item.ms.at} of ${TOTAL} friends found.`); }, 500); document.dispatchEvent(new CustomEvent('ef:milestone', { detail: { at: item.ms.at, step: item.ms.step } })); }
   }
   function closeReveal() {
     const item = revealQueue.shift();
@@ -628,6 +632,17 @@
   });
 
   // ---------- collection ----------
+  // ---------- milestone stars ⭐ (a quarter, half, three quarters, everyone) ----------
+  const MILESTONES = [[0.25, 'A quarter of the way there!'], [0.5, 'Halfway there!'], [0.75, 'Three quarters done!'], [1, 'Every single friend found!']];
+  function milestones() { return MILESTONES.map(([f, text], i) => { const at = Math.ceil(TOTAL * f); return { step: i + 1, frac: f, at, text, reached: found.size >= at }; }); }
+  function milestoneCrossed(before, after) { return milestones().filter(m => before < m.at && after >= m.at).pop() || null; }
+  function renderStars() {
+    const box = $('#bookStars'), wrap = $('#bookProgress'); if (!box || !wrap) return;
+    const ms = milestones(), lit = ms.filter(m => m.reached).length;
+    box.innerHTML = ms.map(m => `<span class="ms${m.reached ? ' lit' : ''}${m.frac === 1 ? ' end' : ''}" style="left:${m.frac * 100}%" title="${m.reached ? '⭐ ' : ''}${m.at} friends">⭐</span>`).join('');
+    wrap.setAttribute('aria-valuemax', TOTAL); wrap.setAttribute('aria-valuenow', found.size);
+    wrap.setAttribute('aria-valuetext', `${found.size} of ${TOTAL} friends found, ${lit} of ${ms.length} milestone stars`);
+  }
   function openBook() {
     const g = $('#bookGrid'); g.innerHTML = '';
     const frag = document.createDocumentFragment();
@@ -649,6 +664,7 @@
     g.appendChild(frag);
     const finals = D.elements.filter(e => e.final), ff = finals.filter(e => found.has(e.id)).length;
     $('#bookBar').style.width = (found.size / TOTAL * 100) + '%';
+    renderStars();
     $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★` + (reach.size ? ` · 🌱 ${reach.size} within reach` : '');
     const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length, chain: chainFriends().length };
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { c.querySelector('.n').textContent = counts[c.dataset.filter]; });
@@ -1588,7 +1604,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }

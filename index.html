@@ -66,6 +66,7 @@
       <div class="rays" aria-hidden="true"></div>
       <div class="legend-badge" id="revealBadge">★ Legendary Friend ★</div>
       <p class="reveal-combo" id="revealCombo" hidden></p>
+      <p class="reveal-milestone" id="revealMilestone" hidden></p>
       <p class="reveal-kicker">You discovered</p>
       <div class="reveal-art" id="revealArt"></div>
       <h2 id="revealName">Steam!</h2>
@@ -87,7 +88,10 @@
         <h2 id="bookTitle">Friend Collection</h2>
         <button class="btn icon close" data-close aria-label="Close collection"><i data-icon="x"></i></button>
       </header>
-      <div class="progress" aria-hidden="true"><div class="bar" id="bookBar"></div></div>
+      <div class="progress-wrap" id="bookProgress" role="progressbar" aria-label="Collection progress" aria-valuemin="0">
+        <div class="progress" aria-hidden="true"><div class="bar" id="bookBar"></div></div>
+        <div class="milestones" id="bookStars" aria-hidden="true"></div>
+      </div>
       <p class="book-sub" id="bookSub"></p>
       <div class="book-filter" id="bookFilter" role="radiogroup" aria-label="Show which friends">
         <button type="button" class="btn filter-chip active" role="radio" aria-checked="true" data-filter="all">🌈 All <b class="n"></b></button>
@@ -354,6 +358,7 @@
         <li>In a friend's page, tap <b>‹ ›</b>, swipe sideways or press the <b>← →</b> arrow keys to flip through your found friends.</li>
         <li>In the <b>Collection</b>, tap <b>💖 Found</b>, <b>❔ Missing</b> or <b>★ Legendary</b> to see just those friends.</li>
         <li>In the <b>Collection</b>, a missing friend with a little <b>🌱 sprout</b> is <b>within reach</b>: you already have both friends you need to make it. Which two? That's for you to find out!</li>
+        <li>The Collection bar has four <b>⭐ milestone stars</b> (a quarter, half, three quarters and everyone). Each one lights up, with a little party, the moment you reach it.</li>
         <li>Playfield getting messy? Tap <b>✨ Tidy</b> in its corner (or press <b>T</b>) and your friends hop into neat little rows, with twins side by side.</li>
         <li>Want a memory? With two or more friends on the playfield, tap <b>📸 Photo</b> and they line up for a cute group photo you can save or share.</li>
         <li>Leave the playfield quiet for a little while and your friends get <b>sleepy</b> 💤. Tap anywhere to wake them up!</li>
