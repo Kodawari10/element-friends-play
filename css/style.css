@@ -414,6 +414,14 @@ html[data-theme="night"] .world-sum b { color: #ff9ec7; }
 .wallet-opt.cartridge-opt.busy { opacity: .7; }
 .cart-ico { background: linear-gradient(135deg, #a78bfa, #ff8fb8); color: #fff; font-size: 16px; }
 .wallet-or { text-align: center; margin: 8px 0 4px; font-size: 13px; }
+.cart-scope { font-size: 12px; margin: 4px 6px 6px; line-height: 1.35; text-align: left; }
+.cart-steps { display: flex; gap: 6px; list-style: none; padding: 0; margin: 2px 0 8px; flex-wrap: wrap; justify-content: center; }
+.cart-steps[hidden] { display: none; }
+.cart-steps li { font-size: 12px; padding: 3px 9px; border-radius: 999px; background: #f3eefe; color: var(--ink2); border: 1.5px solid #e2d8ff; transition: background .25s, color .25s; }
+.cart-steps li.now { background: #fff3b0; border-color: #ffd86b; color: var(--ink); font-weight: 700; }
+.cart-steps li.done { background: linear-gradient(135deg, #a78bfa, #ff8fb8); border-color: transparent; color: #fff; }
+.cart-steps.failed li.now { background: #ffe0e6; border-color: #ff9fb3; }
+@media (prefers-reduced-motion: reduce) { .cart-steps li { transition: none; } }
 .nowallet-lite { font-size: 13px; line-height: 1.4; margin: 8px 0; }
 .nowallet-lite a { color: var(--ink); font-weight: 700; }
 

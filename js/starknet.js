@@ -72,22 +72,93 @@
     return methods.map(method => ({ target: C.contractAddress, method }));
   }
 
+  // ---------- errors (starkzap-sdk skill: classify, then recover) ----------
+  // Every failure is mapped to a stable code + a cute message + the next action, so the UI never shows raw stack text.
+  const ERR = {
+    USER_CANCELLED: { msg: 'Cancelled, no worries ♡', recovery: 'none', retry: false },
+    VALIDATION_ERROR: { msg: 'Something in the mint request looks off. Please refresh the game and try again.', recovery: 'fix_input', retry: false },
+    UNDEPLOYED_ACCOUNT: { msg: 'Your Starknet account isn’t set up yet. Setting it up first…', recovery: 'ensure_ready', retry: true },
+    RPC_OR_NETWORK: { msg: 'Starknet is hard to reach right now. Please try again in a moment.', recovery: 'retry_backoff', retry: true },
+    RATE_LIMIT_OR_TIMEOUT: { msg: 'Starknet is busy right now. Please try again in a minute.', recovery: 'retry_backoff', retry: true },
+    TX_REVERTED: { msg: 'Starknet said no to this mint', recovery: 'check_preflight', retry: false },
+    AUTH_OR_PERMISSION: { msg: 'Your wallet didn’t allow this. Please reconnect and try again.', recovery: 'reconnect', retry: false },
+    SPONSORSHIP_UNAVAILABLE: { msg: 'Free minting isn’t available right now.', recovery: 'user_pays', retry: false },
+    CHAIN_MISMATCH: { msg: `Wrong network. This game uses ${C.networkName || C.network}.`, recovery: 'switch_network', retry: false },
+    POPUP_BLOCKED: { msg: 'Cartridge needs a popup. Please allow popups for this site ♡', recovery: 'allow_popup', retry: false },
+    UNKNOWN: { msg: 'Something went wrong', recovery: 'none', retry: false },
+  };
+  function classifyError(err) {
+    if (err && err.code && ERR[err.code]) return Object.assign({ code: err.code, detail: err.message || '' }, ERR[err.code]);
+    const m = err && err.message ? err.message : String(err || '');
+    let code = 'UNKNOWN';
+    if (/reject|cancel|abort(ed)? by user|denied by user|user (closed|dismissed)|closed the (popup|window)/i.test(m)) code = 'USER_CANCELLED';
+    else if (/popup.*block|blocked.*popup/i.test(m)) code = 'POPUP_BLOCKED';
+    else if (/not deployed|undeployed|contract not found.*account/i.test(m)) code = 'UNDEPLOYED_ACCOUNT';
+    else if (/SNIP-9|not compatible with SNIP|paymaster|sponsor|gasless|outside.?execution/i.test(m)) code = 'SPONSORSHIP_UNAVAILABLE';
+    else if (/chain.?id|chain mismatch|wrong network|network mismatch/i.test(m)) code = 'CHAIN_MISMATCH';
+    else if (/\b429\b|rate.?limit|too many requests|timed? ?out|timeout/i.test(m)) code = 'RATE_LIMIT_OR_TIMEOUT';
+    else if (/revert|preflight|execution failed|EF: /i.test(m)) code = 'TX_REVERTED';
+    else if (/\b40[13]\b|unauthori[sz]ed|forbidden|signature|permission|policy|not allowed/i.test(m)) code = 'AUTH_OR_PERMISSION';
+    else if (/failed to fetch|network ?error|fetch|ECONN|\b5\d\d\b|RPC/i.test(m)) code = 'RPC_OR_NETWORK';
+    else if (/invalid|malformed|amount|decimals/i.test(m)) code = 'VALIDATION_ERROR';
+    return Object.assign({ code, detail: m }, ERR[code]);
+  }
+  function codedError(code, detail) { const e = new Error(detail || ERR[code].msg); e.code = code; return e; }
+  function friendly(err) {
+    const k = classifyError(err);
+    if (k.code === 'TX_REVERTED' || k.code === 'UNKNOWN') {
+      const why = String(k.detail || '').replace(/^.*?(EF: [^"\\\n]+).*$/s, '$1').slice(0, 120);
+      return `${k.msg}${why ? ': ' + esc(why) : ''}`;
+    }
+    return esc(k.msg);
+  }
+
   // ---------- RPC (read-only views) ----------
-  async function rpc(method, params) {
-    const r = await fetch(C.rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }) });
-    const j = await r.json(); if (j.error) throw new Error(j.error.message || 'RPC error'); return j.result;
+  // Timeout per request (8s), retry only transient failures (timeout / 429 / 5xx / network) with
+  // exponential backoff + jitter, max 3 attempts. JSON-RPC errors (deterministic) are never retried.
+  const sleepMs = ms => new Promise(r => setTimeout(r, ms));
+  async function rpcOnce(method, params, timeoutMs) {
+    const ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = ctl ? setTimeout(() => ctl.abort(), timeoutMs) : null;
+    let r;
+    try {
+      r = await fetch(C.rpcUrl, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method, params }), signal: ctl ? ctl.signal : undefined });
+    } catch (e) {
+      throw codedError(e && e.name === 'AbortError' ? 'RATE_LIMIT_OR_TIMEOUT' : 'RPC_OR_NETWORK', e && e.name === 'AbortError' ? 'RPC timed out' : 'RPC network error');
+    } finally { if (timer) clearTimeout(timer); }
+    if (r.status === 429) throw codedError('RATE_LIMIT_OR_TIMEOUT', 'RPC rate limited (429)');
+    if (r.status >= 500) throw codedError('RPC_OR_NETWORK', 'RPC error ' + r.status);
+    const j = await r.json(); if (j.error) { const e = new Error(j.error.message || 'RPC error'); e.rpc = true; throw e; } return j.result;
+  }
+  async function rpc(method, params, opt) {
+    const tries = (opt && opt.tries) || 3, timeoutMs = (opt && opt.timeoutMs) || 8000;
+    for (let i = 0; ; i++) {
+      try { return await rpcOnce(method, params, timeoutMs); } catch (e) {
+        const transient = !e.rpc && (e.code === 'RPC_OR_NETWORK' || e.code === 'RATE_LIMIT_OR_TIMEOUT');
+        if (!transient || i >= tries - 1) throw e;
+        await sleepMs(500 * Math.pow(2, i) + Math.floor(Math.random() * 250));
+      }
+    }
+  }
+  // Network guard: the RPC must serve the chain this game is configured for (checked once per session).
+  let rpcChainP = null;
+  function checkRpcChain() {
+    if (!rpcChainP) rpcChainP = rpc('starknet_chainId', [], { tries: 2 })
+      .then(id => !id || !C.chainId || BigInt(id) === BigInt(C.chainId))
+      .catch(e => { rpcChainP = null; return e && e.rpc ? true : null; }); // unsupported method → don't block
+    return rpcChainP;
   }
   const call = (fn, calldata) => rpc('starknet_call', { request: { contract_address: C.contractAddress, entry_point_selector: SEL[fn], calldata: calldata || [] }, block_id: 'latest' });
   async function waitTx(hash) {
     for (let i = 0; i < 90; i++) {
       try {
-        const r = await rpc('starknet_getTransactionReceipt', { transaction_hash: hash });
+        const r = await rpc('starknet_getTransactionReceipt', { transaction_hash: hash }, { tries: 1 });
         if (r && r.execution_status === 'REVERTED') throw new Error('Transaction reverted: ' + (r.revert_reason || '').slice(0, 140));
         if (r && r.execution_status === 'SUCCEEDED') return r;
       } catch (e) { if (/reverted/.test(e.message)) throw e; }
       await new Promise(r => setTimeout(r, i < 5 ? 1500 : 3000));
     }
-    throw new Error('Timed out waiting for the transaction');
+    throw codedError('RATE_LIMIT_OR_TIMEOUT', 'Timed out waiting for the transaction (it may still land: check the explorer link)');
   }
 
   // ---------- connect ----------
@@ -104,7 +175,11 @@
       parts.push(`<button type="button" class="btn wide wallet-opt cartridge-opt" id="optCartridge" aria-label="Play with Cartridge">
         <span class="wallet-ph cart-ico" aria-hidden="true">✦</span>
         <span class="wallet-meta"><b>Play with Cartridge</b><small>Social / passkey · no seed phrase · free mints when sponsored</small></span>
-      </button>`);
+      </button>
+      <p class="cart-scope muted" id="cartScope">🔒 Game session can only <b>mint Element Friends</b>${configured ? '' : ' (once the contract is live)'}. It can’t move tokens.</p>
+      <ol class="cart-steps" id="cartSteps" hidden aria-live="polite">
+        <li data-step="CONNECTED">Sign in</li><li data-step="CHECK_DEPLOYED">Check account</li><li data-step="DEPLOYING">Set up</li><li data-step="READY">Ready ✦</li>
+      </ol>`);
       if (list.length) parts.push('<p class="wallet-or muted">— or a browser wallet —</p>');
     }
 
@@ -151,12 +226,14 @@
         url: cart.url,
         feeMode: cart.feeMode || { type: 'paymaster' },
         deploy: cart.deploy || 'if_needed',
+        onProgress: showStep,
       });
+      showStep('READY');
       feeMode = cart.feeMode || { type: 'paymaster' };
       feeFallbackUsed = false;
       wallet = connected; walletKind = 'cartridge';
       address = normalize(connected.address);
-      chainOk = true;
+      chainOk = (await checkRpcChain()) !== false;
       if (cs.address !== address) minted.clear();
       cs.walletId = 'cartridge'; cs.address = address; saveCs();
       G.ui.closeModal('wallets'); refreshButton();
@@ -166,12 +243,24 @@
       await sync(true);
       return true;
     } catch (e) {
-      const msg = e && e.message ? e.message : String(e);
-      G.ui.toast(/popup|block/i.test(msg)
-        ? 'Cartridge needs a popup — please allow popups for this site ♡'
-        : 'Cartridge connection cancelled' + (msg ? ': ' + msg.slice(0, 80) : ''));
+      const k = classifyError(e);
+      showStep('FAILED');
+      G.ui.toast(k.code === 'USER_CANCELLED' ? 'Cartridge sign-in cancelled, no worries ♡'
+        : k.code === 'POPUP_BLOCKED' || /popup/i.test(k.detail) ? ERR.POPUP_BLOCKED.msg
+        : 'Cartridge connection failed: ' + k.msg);
       return false;
     } finally { setBusyPicker(false); }
+  }
+  // StarkZap onboarding progress (onProgress: CONNECTED → CHECK_DEPLOYED → DEPLOYING → READY | FAILED)
+  const STEP_ORDER = ['CONNECTED', 'CHECK_DEPLOYED', 'DEPLOYING', 'READY'];
+  function showStep(step) {
+    const ol = $('#cartSteps'); if (!ol || !step) return;
+    ol.hidden = false; ol.classList.toggle('failed', step === 'FAILED');
+    const at = STEP_ORDER.indexOf(step);
+    ol.querySelectorAll('li').forEach((li, i) => {
+      li.classList.toggle('done', at >= 0 && i < at || step === 'READY');
+      li.classList.toggle('now', i === at && step !== 'READY');
+    });
   }
 
   async function connectExtension(w, silent) {
@@ -197,7 +286,7 @@
       await sync(!silent);
       return true;
     } catch (e) {
-      if (!silent) G.ui.toast('Wallet connection cancelled' + (e && e.message ? ': ' + e.message.slice(0, 80) : ''));
+      if (!silent) { const k = classifyError(e); G.ui.toast(k.code === 'USER_CANCELLED' ? 'Wallet connection cancelled, no worries ♡' : 'Wallet connection failed: ' + k.msg); }
       return false;
     }
   }
@@ -243,6 +332,7 @@
   async function sync(loud) {
     if (!configured || !address) return;
     try {
+      if ((await checkRpcChain()) === false) { chainOk = false; refreshButton(); if (loud) G.ui.toast(ERR.CHAIN_MISMATCH.msg); return; }
       const r = await call('discoveries_of', [address]);
       const n = parseInt(r[0], 16); const list = r.slice(1, 1 + n).map(x => NUM[parseInt(x, 16)]).filter(Boolean);
       minted.clear(); list.forEach(id => minted.add(id)); saveCs();
@@ -279,21 +369,62 @@
   }
   function shouldFallbackFees(err) {
     const msg = err && err.message ? err.message : String(err || '');
-    return /SNIP-9|not compatible with SNIP|paymaster|sponsor|gasless|outside.?execution|policy/i.test(msg);
+    return classifyError(err).code === 'SPONSORSHIP_UNAVAILABLE' || /policy/i.test(msg);
+  }
+  const fallbackMode = () => (C.cartridge && C.cartridge.fallbackFeeMode) || 'user_pays';
+  const withTimeout = (p, ms, what) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(codedError('RATE_LIMIT_OR_TIMEOUT', what + ' timed out')), ms))]);
+
+  // validate: the calldata must be exactly what the contract expects (n, then n × [id, a, b] of known ids)
+  function validateCalldata(cd) {
+    const n = Number(BigInt(cd[0]));
+    if (!n || cd.length !== 1 + n * 3) throw codedError('VALIDATION_ERROR', 'mint batch is malformed');
+    const known = new Set(Object.values(IDS).map(Number));
+    for (let i = 0; i < n; i++) {
+      const [e, a, b] = cd.slice(1 + i * 3, 4 + i * 3).map(x => Number(BigInt(x)));
+      if (!known.has(e) || (a && !known.has(a)) || (b && !known.has(b))) throw codedError('VALIDATION_ERROR', 'mint batch has an unknown friend');
+    }
+  }
+  // preflight (StarkZap wallet.preflight → simulateTransaction). Best-effort, 10s budget; a deterministic
+  // revert stops the mint before the player is asked to approve anything.
+  async function preflightCartridge(calls, mode) {
+    if (typeof wallet.preflight !== 'function') return { ok: true, skipped: true };
+    let res;
+    try { res = await withTimeout(wallet.preflight({ calls, feeMode: mode }), 10000, 'preflight'); } catch (e) { return { ok: true, skipped: true }; }
+    if (res && res.ok === false) {
+      if (/not deployed/i.test(res.reason || '')) return { ok: false, undeployed: true, reason: res.reason };
+      return { ok: false, reason: res.reason || 'simulation failed' };
+    }
+    return { ok: true };
+  }
+  // UNDEPLOYED_ACCOUNT recovery: wallet.ensureReady({ deploy: "if_needed" }) before a user_pays write
+  async function ensureReadyFor(mode) {
+    if (typeof wallet.ensureReady !== 'function') return;
+    await wallet.ensureReady({ deploy: (C.cartridge && C.cartridge.deploy) || 'if_needed', feeMode: mode });
+  }
+  async function executeCartridge(call, mode) {
+    let pf = await preflightCartridge([call], mode);
+    if (!pf.ok && pf.undeployed) { await ensureReadyFor(mode); pf = await preflightCartridge([call], mode); }
+    if (!pf.ok) throw codedError(pf.undeployed ? 'UNDEPLOYED_ACCOUNT' : 'TX_REVERTED', 'Preflight failed: ' + pf.reason);
+    try { return await wallet.execute([call], { feeMode: mode }); } catch (err) {
+      // Not retried blindly (a tx may already be in flight): only the undeployed case, after ensureReady.
+      if (classifyError(err).code === 'UNDEPLOYED_ACCOUNT' && !isSponsoredMode(mode)) { await ensureReadyFor(mode); return await wallet.execute([call], { feeMode: mode }); }
+      throw err;
+    }
   }
 
   async function invokeDiscoverBatch(chunk) {
     const cd = calldataFor(chunk);
+    validateCalldata(cd);
     if (walletKind === 'cartridge') {
       const call = { contractAddress: C.contractAddress, entrypoint: 'discover_batch', calldata: cd };
-      const tryMode = feeFallbackUsed ? ((C.cartridge && C.cartridge.fallbackFeeMode) || 'user_pays') : feeMode;
+      const tryMode = feeFallbackUsed ? fallbackMode() : feeMode;
       try {
-        return await wallet.execute([call], { feeMode: tryMode });
+        return await executeCartridge(call, tryMode);
       } catch (err) {
         if (!feeFallbackUsed && isSponsoredMode(feeMode) && shouldFallbackFees(err)) {
           feeFallbackUsed = true;
-          G.ui.toast('Free minting isn’t available right now — your wallet will pay the (tiny) fee ♡');
-          return await wallet.execute([call], { feeMode: (C.cartridge && C.cartridge.fallbackFeeMode) || 'user_pays' });
+          G.ui.toast('Free minting isn’t available right now. Your wallet will pay the tiny fee ♡');
+          return await executeCartridge(call, fallbackMode());
         }
         throw err;
       }
@@ -327,8 +458,16 @@
         const chunk = steps.slice(i, i + size);
         const res = await invokeDiscoverBatch(chunk);
         const h = res && (res.transaction_hash || res.transactionHash || res.hash);
-        setStatus(statusEl, `Minting${steps.length > size ? ` (${Math.min(i + size, steps.length)}/${steps.length})` : ''}… <a href="${C.explorerTx}${h}" target="_blank" rel="noopener noreferrer">view tx</a>`);
-        const rcpt = await waitTx(h);
+        if (!h) throw codedError('UNKNOWN', 'The wallet returned no transaction hash');
+        const prog = steps.length > size ? ` (${Math.min(i + size, steps.length)}/${steps.length})` : '';
+        const link = `<a href="${C.explorerTx}${h}" target="_blank" rel="noopener noreferrer">view tx</a>`;
+        setStatus(statusEl, `Minting${prog}… ${link}`);
+        // StarkZap tx.watch: live finality updates while we verify the receipt ourselves
+        let stop = null;
+        if (res && typeof res.watch === 'function') {
+          try { stop = res.watch(({ finality }) => { if (busy && finality) setStatus(statusEl, `Minting${prog}… ${esc(FINALITY[finality] || String(finality).toLowerCase().replace(/_/g, ' '))} ${link}`); }, { pollIntervalMs: 3000, timeoutMs: 180000, onError: () => {} }); } catch (e) { stop = null; }
+        }
+        let rcpt; try { rcpt = await waitTx(h); } finally { if (typeof stop === 'function') stop(); }
         chunk.forEach(s => minted.add(s.id)); saveCs();
         firsts.push(...worldFirstsIn(rcpt));
       }
@@ -346,10 +485,13 @@
       }
       decorate();
     } catch (e) {
-      const msg = e && e.message ? e.message : String(e);
-      setStatus(statusEl, /reject|cancel|abort|denied/i.test(msg) ? 'Mint cancelled, no worries ♡' : 'Mint failed: ' + esc(msg.slice(0, 120)));
+      const k = classifyError(e);
+      lastError = { code: k.code, recovery: k.recovery, detail: String(k.detail || '').slice(0, 200) };
+      setStatus(statusEl, k.code === 'USER_CANCELLED' ? 'Mint cancelled, no worries ♡' : 'Mint failed: ' + friendly(e));
     } finally { busy = false; }
   }
+  const FINALITY = { RECEIVED: 'sent ✦', PRE_CONFIRMED: 'almost there ✦', CANDIDATE: 'almost there ✦', ACCEPTED_ON_L2: 'accepted ✦', ACCEPTED_ON_L1: 'final ✦' };
+  let lastError = null;
   let panelMsg = '';
   function setStatus(el, html) { if (!el) return; el.innerHTML = html; if (el.id === 'panelStatus') { panelMsg = html; const b = $('#mintAll'); if (b) b.disabled = busy || b.disabled; } }
 
@@ -374,7 +516,8 @@
     const via = walletKind === 'cartridge' ? ' · via Cartridge' : '';
     const feeNote = walletKind === 'cartridge'
       ? (feeFallbackUsed ? '<div class="chain-note">Fees: your wallet pays (sponsorship unavailable).</div>'
-        : '<div class="chain-note">Fees: sponsored when Cartridge paymaster is available ✦</div>')
+        : '<div class="chain-note">Fees: sponsored when Cartridge paymaster is available ✦</div>') +
+        '<div class="chain-note">🔒 Session limited to minting Element Friends · every mint is checked first (preflight)</div>'
       : '';
     body.innerHTML = `
       <div class="net-pill ${chainOk ? '' : 'bad'}">${chainOk ? '●' : '▲'} ${esc(C.networkName)}${via}${chainOk ? '' : ': please switch network in your wallet'}</div>
@@ -497,5 +640,6 @@
     get address() { return address; },
     get walletKind() { return walletKind; },
     minted, sync, config: C, configured, firstOf, tokenOf, get worldFirsts() { return worldFirsts; },
+    classifyError, get lastError() { return lastError; }, validateCalldata,
   };
 })();
