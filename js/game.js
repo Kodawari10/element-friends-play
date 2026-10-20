@@ -631,21 +631,25 @@
   function openBook() {
     const g = $('#bookGrid'); g.innerHTML = '';
     const frag = document.createDocumentFragment();
+    const reach = reachable();
     D.elements.forEach((e, i) => {
-      const known = found.has(e.id);
+      const known = found.has(e.id), near = !known && reach.has(e.id);
       const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'listitem');
       const fav = known && isFave(e.id), shn = known && state.shinies.includes(e.id);
-      b.className = 'book-cell' + (known ? '' : ' locked') + (e.final ? ' final' : '') + (fav ? ' fave' : '') + (shn ? ' shiny-seen' : '');
+      b.className = 'book-cell' + (known ? '' : ' locked') + (near ? ' reach' : '') + (e.final ? ' final' : '') + (fav ? ' fave' : '') + (shn ? ' shiny-seen' : '');
       b.dataset.id = e.id;
-      b.setAttribute('aria-label', known ? `${e.name}${e.final ? ', legendary' : ''}${fav ? ', best friend' : ''}${shn ? ', met a shiny one' : ''}. Show details` : 'Undiscovered friend');
-      b.innerHTML = `<span class="num">${i + 1}</span>` + (fav ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '') + (shn ? '<span class="shiny-dot" aria-hidden="true">✨</span>' : '') + `<div class="art">${ART.render(e, { label: false })}</div><span class="lbl">${known ? e.name : '???'}</span>`;
-      if (known) b.addEventListener('click', () => openDetail(e.id)); else b.tabIndex = -1;
+      b.setAttribute('aria-label', known ? `${e.name}${e.final ? ', legendary' : ''}${fav ? ', best friend' : ''}${shn ? ', met a shiny one' : ''}. Show details` : near ? 'Undiscovered friend, within reach: you already have both friends needed to make it' : 'Undiscovered friend');
+      if (near) b.title = 'Within reach! You already have both friends you need 🌱';
+      b.innerHTML = `<span class="num">${i + 1}</span>` + (fav ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '') + (shn ? '<span class="shiny-dot" aria-hidden="true">✨</span>' : '') + (near ? '<span class="reach-dot" aria-hidden="true">🌱</span>' : '') + `<div class="art">${ART.render(e, { label: false })}</div><span class="lbl">${known ? e.name : '???'}</span>`;
+      if (known) b.addEventListener('click', () => openDetail(e.id));
+      else if (near) b.addEventListener('click', () => { SND.play('select'); const m = 'Within reach! 🌱 You already have both friends you need for this one. Keep mixing, or try a 💡 Hint.'; toast(m, 3200); announce(m); });
+      else b.tabIndex = -1;
       frag.appendChild(b);
     });
     g.appendChild(frag);
     const finals = D.elements.filter(e => e.final), ff = finals.filter(e => found.has(e.id)).length;
     $('#bookBar').style.width = (found.size / TOTAL * 100) + '%';
-    $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★`;
+    $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★` + (reach.size ? ` · 🌱 ${reach.size} within reach` : '');
     const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length, chain: chainFriends().length };
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { c.querySelector('.n').textContent = counts[c.dataset.filter]; });
     // the ✨ Shiny chip only shows up once you've met a shiny friend
@@ -657,6 +661,12 @@
     applyBookFilter(bookFilter, false);
     openModal('book');
     document.dispatchEvent(new CustomEvent('ef:book'));
+  }
+  // 🌱 Within reach: undiscovered friends whose two ingredients you already have (the recipe itself stays a secret).
+  function reachable() {
+    const out = new Set();
+    D.recipes.forEach(([a, b, r]) => { if (!found.has(r) && found.has(a) && found.has(b)) out.add(r); });
+    return out;
   }
   // Collection filter chips (session only, nothing saved).
   let bookFilter = 'all';
@@ -1578,7 +1588,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }

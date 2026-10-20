@@ -1280,3 +1280,19 @@ html.calm .omk-friend, html.calm .omk-box.shake, html.calm .omk-box.shake .omk-s
 .board.costumes-still .ef-svg .costume, html.calm .ef-svg .costume { animation: none; transform: rotate(-4deg); }
 @media (prefers-reduced-motion: reduce) { .ef-svg .costume { animation: none; transform: rotate(-4deg); } }
 html[data-theme="night"] .ef-svg .costume { filter: brightness(1.08) saturate(.95); }
+
+/* 🌱 Within reach: undiscovered friends you could make right now */
+.book-cell.locked.reach { cursor: pointer; background: linear-gradient(160deg, #f1fff4, #f7f0f8); box-shadow: 0 0 0 2px #b9ecc6, 0 2px 8px rgba(122, 76, 140, .1); animation: reachGlow 2.6s ease-in-out infinite; }
+.book-cell.locked.reach .art { opacity: .2; }
+.book-cell.locked.reach .lbl { color: #6fbf86; }
+.book-cell .reach-dot { position: absolute; right: 7px; top: 4px; font-size: 12px; line-height: 1; pointer-events: none; animation: reachSprout 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes reachGlow { 0%, 100% { box-shadow: 0 0 0 2px #b9ecc6, 0 2px 8px rgba(122, 76, 140, .1); } 50% { box-shadow: 0 0 0 3px #9fe3b2, 0 0 14px rgba(120, 214, 150, .45); } }
+@keyframes reachSprout { 0%, 100% { transform: rotate(-8deg) scale(1); } 50% { transform: rotate(8deg) scale(1.15); } }
+html.calm .book-cell.locked.reach, html.calm .book-cell .reach-dot { animation: none; }
+@media (prefers-reduced-motion: reduce) { .book-cell.locked.reach, .book-cell .reach-dot { animation: none; } }
+html[data-theme="night"] .book-cell.locked.reach { background: linear-gradient(160deg, #23413a, #241c3c); box-shadow: 0 0 0 2px #4f9a72; }
+html[data-theme="night"] .book-cell.locked.reach .lbl { color: #8fd8a8; }
+@keyframes reachGlowNight { 0%, 100% { box-shadow: 0 0 0 2px #4f9a72; } 50% { box-shadow: 0 0 0 3px #6fc794, 0 0 14px rgba(111, 199, 148, .35); } }
+html[data-theme="night"] .book-cell.locked.reach { animation-name: reachGlowNight; }
+html.calm[data-theme="night"] .book-cell.locked.reach { animation: none; }
+@media (prefers-reduced-motion: reduce) { html[data-theme="night"] .book-cell.locked.reach { animation: none; } }
