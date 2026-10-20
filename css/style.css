@@ -726,7 +726,10 @@ html[data-theme="night"] .backup-status.bad { color: #ff9fbf; }
 /* ---------- friends since ---------- */
 .since-pill { display: inline-flex; align-items: center; gap: 5px; margin: 2px auto 4px; padding: 3px 11px; border-radius: 999px; background: #fff0f7; border: 2px dashed #ffc2dd; color: #c0628f; font-size: 12px; font-weight: 800; letter-spacing: .02em; }
 .since-pill:empty { display: none; }
+.made-pill { background: #effbf5; border-color: #9fe0c0; color: #3f9a74; }
+.made-pill[hidden] { display: none; }
 html[data-theme="night"] .since-pill { background: #2c2350; border-color: #6b5aa6; color: #d9c9ff; }
+html[data-theme="night"] .made-pill { background: #203a3a; border-color: #4f9a86; color: #b8f0dc; }
 
 /* Best friends 💗 */
 .btn.icon.fave-btn { position: absolute; left: 14px; top: 14px; z-index: 2; font-size: 20px; line-height: 1; background: #fff4fa; box-shadow: 0 3px 0 #f3d2e4, inset 0 0 0 2px #f6dbe9; }

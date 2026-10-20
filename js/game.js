@@ -60,7 +60,7 @@
     if (state && state.calm) return;
     try { if (navigator.vibrate && navigator.userActivation && navigator.userActivation.isActive) navigator.vibrate(ms); } catch (err) { /* ignore */ }
   }
-  function freshState() { return { found: BASE.slice(), seen: {}, muted: false, hintAt: 0, board: null, tapTip: false, theme: 'auto', mixCounts: true, tried: [], pets: 0, sort: 'az', knownTotal: TOTAL, twinTip: false, music: false, met: {}, faves: [], bestCombo: 0, wall: 'dots', size: 'comfy', calm: false, nicks: {}, seasonTip: '', shinies: [] }; }
+  function freshState() { return { found: BASE.slice(), seen: {}, muted: false, hintAt: 0, board: null, tapTip: false, theme: 'auto', mixCounts: true, tried: [], pets: 0, sort: 'az', knownTotal: TOTAL, twinTip: false, music: false, met: {}, faves: [], bestCombo: 0, wall: 'dots', size: 'comfy', calm: false, nicks: {}, seasonTip: '', shinies: [], made: {} }; }
   function load() {
     state = freshState();
     let saved = null;
@@ -95,6 +95,8 @@
     Object.keys(state.nicks).forEach(k => { const v = cleanNick(state.nicks[k]); if (!D.byId[k] || !found.has(k) || !v) delete state.nicks[k]; else state.nicks[k] = v; });
     if (!Array.isArray(state.shinies)) state.shinies = [];
     state.shinies = [...new Set(state.shinies.filter(id => typeof id === 'string' && D.byId[id] && found.has(id)))];
+    if (!state.made || typeof state.made !== 'object' || Array.isArray(state.made)) state.made = {};
+    Object.keys(state.made).forEach(k => { const v = state.made[k]; if (!D.byId[k] || D.byId[k].base || !found.has(k) || typeof v !== 'number' || !(v >= 1)) delete state.made[k]; else state.made[k] = Math.min(MADE_MAX, Math.floor(v)); });
     tried.clear(); state.tried.forEach(k => tried.add(k));
     if (found.size < TOTAL) state.complete = false; // finished players get to cheer again for new friends
   }
@@ -118,6 +120,24 @@
     if (diff === 1) return { icon: '🌙', text: 'Met yesterday' };
     const opts = { month: 'short', day: 'numeric' }; if (y !== now.getFullYear()) opts.year = 'numeric';
     return { icon: '📅', text: 'Friends since ' + day.toLocaleDateString('en-US', opts) };
+  }
+  // ---------- times made 🧪 (local only: how often you've mixed each friend) ----------
+  const MADE_MAX = 99999, MADE_CHEERS = [10, 25, 50, 100, 250, 500, 1000];
+  const madeCount = id => (state && state.made && state.made[id]) || 0;
+  const ordinal = n => n + ((n % 100 >= 11 && n % 100 <= 13) ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th'));
+  function noteMade(id) {
+    const n = Math.min(MADE_MAX, madeCount(id) + 1); state.made[id] = n; return n;
+  }
+  function madeText(id) {
+    const n = madeCount(id);
+    if (!n) return '';
+    return n === 1 ? 'Made once' : n === 2 ? 'Made twice' : `Made ${n.toLocaleString('en-US')} times`;
+  }
+  function applyMade(id) {
+    const el = $('#detailMade'), t = madeText(id);
+    el.hidden = !t;
+    el.innerHTML = t ? `<span aria-hidden="true">🧪</span> ${t}` : '';
+    if (t) el.setAttribute('aria-label', t); else el.removeAttribute('aria-label');
   }
   // ---------- nicknames 🏷️ (local only, never sent on-chain) ----------
   const NICK_MAX = 16;
@@ -507,8 +527,14 @@
       const isNew = !found.has(r);
       document.dispatchEvent(new CustomEvent('ef:combine', { detail: { id: r, a: pa.dataset.id, b: pb.dataset.id, isNew } }));
       const shiny = Math.random() < shinyChance;
+      const times = noteMade(r);
       makePiece(r, mx, my, undefined, shiny); SND.play('pop');
       if (isNew) discover(r, pa.dataset.id, pb.dataset.id);
+      else if (MADE_CHEERS.includes(times)) {
+        floatText(cx, cy - 50, `${ordinal(times)} ${D.byId[r].name}! 🧪`);
+        announce(`That's your ${ordinal(times)} ${D.byId[r].name}!`);
+        document.dispatchEvent(new CustomEvent('ef:made', { detail: { id: r, times } }));
+      }
       else floatText(cx, cy - 50, D.byId[r].name + '!');
       if (shiny) noteShiny(r, cx, cy, isNew);
       save();
@@ -772,6 +798,7 @@
     $('#detailDesc').textContent = e.desc;
     closeNickForm(false); applyNick(id);
     { const fs = friendSince(id), el = $('#detailSince'); el.innerHTML = `<span aria-hidden="true">${fs.icon}</span> ${fs.text}`; el.setAttribute('aria-label', fs.text); }
+    applyMade(id);
     { const sp = $('#detailShiny'), on = state.shinies.includes(id); sp.hidden = !on; sp.textContent = on ? `✨ You've met a shiny ${e.name}!` : ''; }
     const box = $('#detailRecipes'); box.innerHTML = '';
     if (e.base) box.innerHTML = '<div class="recipe-row">One of the four original friends!</div>';
@@ -1624,7 +1651,7 @@
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
     found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
-    applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
+    applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }
   };
