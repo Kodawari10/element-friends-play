@@ -808,7 +808,8 @@
     D.recipes.filter(r => r[2] === id).slice(0, 5).forEach(([a, b]) => {
       const row = document.createElement('div'); row.className = 'recipe-row';
       const known = found.has(a) && found.has(b);
-      row.innerHTML = `${mini(a)}<span aria-hidden="true">+</span>${mini(b)}<span>${known ? esc(D.byId[a].name + ' + ' + D.byId[b].name) : '<span aria-hidden="true">???</span><span class="sr-only">A secret recipe</span>'}</span>`;
+      row.innerHTML = `${mini(a)}<span aria-hidden="true">+</span>${mini(b)}<span>${known ? esc(D.byId[a].name + ' + ' + D.byId[b].name) : '<span aria-hidden="true">???</span><span class="sr-only">A secret recipe</span>'}</span>` +
+        (known ? `<button type="button" class="pair-btn" data-pair="${a},${b}" title="Bring both to the playfield" aria-label="Bring ${esc(D.byId[a].name)} and ${esc(D.byId[b].name)} to the playfield to mix ${esc(e.name)}"><span aria-hidden="true">🧺</span></button>` : '');
       box.appendChild(row);
     });
     const outs = D.recipes.filter(r => r[0] === id || r[1] === id).map(r => r[2]);
@@ -843,6 +844,8 @@
     return true;
   }
   $('#detailRecipes').addEventListener('click', ev => {
+    const pb = ev.target.closest('[data-pair]');
+    if (pb) { SND.unlock(); const [a, b] = pb.dataset.pair.split(','); bringPair(a, b, $('#detailArt').dataset.id); return; }
     const b = ev.target.closest('[data-hop]'); if (!b) return;
     SND.unlock(); hopTo(b.dataset.hop, $('#detailArt').dataset.id);
   });
@@ -1006,6 +1009,26 @@
     return p;
   }
   $('#detailPlay').addEventListener('click', () => { SND.unlock(); bringToBoard($('#detailArt').dataset.id); });
+  // Bring both 🧺🧺: from a known recipe on a friend's card, drop both ingredients side by side, ready to mix.
+  function bringPair(a, b, makes) {
+    if (!a || !b || !found.has(a) || !found.has(b) || !D.byId[a] || !D.byId[b]) return null;
+    const out = D.combine(a, b); makes = out && found.has(out) ? out : null; // never spoil a friend you haven't met
+    ['detail', 'book'].forEach(m => { if (!$('#' + m).hidden) closeModal(m); });
+    clearSel(); markSeen(a); markSeen(b);
+    const w = board.clientWidth, ps = parseFloat(getComputedStyle(board).getPropertyValue('--piece')) || 96, gap = Math.min(ps / 2 + 10, w / 4);
+    let [x, y] = freeSpot(w / 2, board.clientHeight * .45);
+    x = Math.max(gap + 40, Math.min(w - gap - 40, x));
+    const pa = makePiece(a, x - gap, y), pbb = makePiece(b, x + gap, y);
+    [pa, pbb].forEach(p => { if (!still()) { p.classList.remove('pop'); p.classList.add('arrived'); setTimeout(() => p.classList.remove('arrived'), 1600); } });
+    SND.play('drop'); buzz(10); save();
+    const na = D.byId[a].name, nb = D.byId[b].name;
+    const pair = a === b ? `Two ${na} friends are` : `${na} and ${nb} are`;
+    const msg = `${pair} on the playfield! 🧺 Drop one on the other${makes ? ' to make ' + D.byId[makes].name : ''} ✨`;
+    toast(msg, 2800); announce(msg);
+    setTimeout(() => { if (pa.isConnected) pa.focus({ preventScroll: true }); }, 60);
+    document.dispatchEvent(new CustomEvent('ef:bringpair', { detail: { a, b, makes } }));
+    return [pa, pbb];
+  }
 
   // ---------- group photo 📸: a class photo of the friends on the playfield ----------
   const PHOTO_MAX = 12;
@@ -1650,7 +1673,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setChainFriends, chainFriends,
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }

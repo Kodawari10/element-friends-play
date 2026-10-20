@@ -189,6 +189,14 @@ html[data-theme="night"] .hop-chip { background: #32274e; border-color: #5a4580;
 html[data-theme="night"] .hop-chip:hover { background: #3d2f5c; }
 html.calm .hop-chip, html.calm .recipe-row .mini.hop { transition: none; transform: none !important; }
 @media (prefers-reduced-motion: reduce) { .hop-chip, .recipe-row .mini.hop { transition: none; transform: none !important; } }
+.recipe-row .pair-btn { flex: none; width: 34px; height: 34px; margin-left: 2px; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; font-size: 17px; cursor: pointer; background: linear-gradient(160deg, #e3fbef, #d9f1ff); box-shadow: 0 2px 0 #bfe3d4, inset 0 0 0 2px #bdeedb; transition: transform .15s; -webkit-tap-highlight-color: transparent; }
+.recipe-row .pair-btn:hover, .recipe-row .pair-btn:focus-visible { transform: scale(1.12) rotate(6deg); }
+.recipe-row .pair-btn:focus-visible { outline: 3px solid #ff8fc8; outline-offset: 2px; }
+.recipe-row .pair-btn:active { transform: scale(.94); }
+@media (pointer: coarse) { .recipe-row .pair-btn { width: 40px; height: 40px; } }
+html[data-theme="night"] .recipe-row .pair-btn { background: linear-gradient(160deg, #2c4a5e, #34566a); box-shadow: 0 2px 0 #0f1f2a, inset 0 0 0 2px #4f8aa0; }
+html.calm .recipe-row .pair-btn { transition: none; transform: none !important; }
+@media (prefers-reduced-motion: reduce) { .recipe-row .pair-btn { transition: none; transform: none !important; } }
 .recipe-row .q { width: 40px; height: 40px; border-radius: 50%; background: #f3e4f4; display: grid; place-items: center; color: #c7a9cf; }
 
 /* reveal */
