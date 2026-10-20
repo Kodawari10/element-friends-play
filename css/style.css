@@ -1360,3 +1360,36 @@ html[data-theme="night"] .inv-item .inv-jp { background: rgba(255, 194, 224, .16
 @keyframes invJpPop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .inv-item .inv-jp { animation: none; } }
 html.calm .inv-item .inv-jp { animation: none; }
+
+/* 📊 My stats: cozy read-only tiles (sits just under other modals so a friend card can open on top) */
+.modal.stats { z-index: 199; }
+.modal.stats .sheet { width: min(460px, 100%); max-height: min(92vh, 720px); overflow-y: auto; }
+.modal.stats h2 { margin-bottom: 2px; }
+.stats-grid { list-style: none; margin: 12px 0 10px; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 10px 6px 8px; border-radius: 18px; background: #fff4f8; box-shadow: inset 0 0 0 2px #ffd9e8; min-height: 84px; text-align: center; }
+.stat-tile:nth-child(3n+2) { background: #f1fbf5; box-shadow: inset 0 0 0 2px #c9efd8; }
+.stat-tile:nth-child(3n) { background: #f4f1ff; box-shadow: inset 0 0 0 2px #ddd4ff; }
+.stat-tile.big { grid-column: 1 / -1; flex-direction: row; gap: 10px; min-height: 0; padding: 12px; background: linear-gradient(120deg, #ffe3ef, #fff2d9); box-shadow: inset 0 0 0 2px #ffcfe0; }
+.stat-tile.big .stat-val { font-size: 22px; }
+.stat-tile.chain { background: #f3eeff; box-shadow: inset 0 0 0 2px #cdbcff; }
+.stat-emoji { font-size: 22px; line-height: 1.1; }
+.stat-val { font-size: 18px; font-weight: 900; color: var(--ink); line-height: 1.15; font-variant-numeric: tabular-nums; }
+.stat-lbl { font-size: 11px; font-weight: 700; color: var(--ink2); line-height: 1.2; }
+.stats-top-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 0; border-radius: 20px; background: linear-gradient(120deg, #fff6d6, #ffe8f1); box-shadow: inset 0 0 0 2px #ffe08a; cursor: pointer; font: inherit; color: var(--ink); text-align: left; min-height: 64px; }
+.stats-top-btn:hover { filter: brightness(1.03); }
+.stats-top-btn:focus-visible { outline: 3px solid #ff6fa5; outline-offset: 2px; }
+.stats-top-art { width: 52px; height: 52px; flex: none; display: block; }
+.stats-top-art svg { width: 100%; height: 100%; display: block; }
+.stats-top-txt { display: flex; flex-direction: column; line-height: 1.2; }
+.stats-top-k { font-size: 11px; font-weight: 800; color: #c98a00; }
+.stats-top-n { font-size: 16px; font-weight: 900; }
+.stats-top-c { font-size: 12px; font-weight: 700; color: var(--ink2); }
+.stats-since { margin: 10px 0 0; font-size: 13px; font-weight: 700; color: var(--ink2); text-align: center; }
+@media (max-width: 380px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (pointer: coarse) { .stats-btn { min-height: 44px; } }
+html[data-theme="night"] .stat-tile { background: #32274e; box-shadow: inset 0 0 0 2px #4a3b6e; }
+html[data-theme="night"] .stat-tile:nth-child(3n+2) { background: #233a36; box-shadow: inset 0 0 0 2px #3c6a5a; }
+html[data-theme="night"] .stat-tile:nth-child(3n) { background: #2c2a52; box-shadow: inset 0 0 0 2px #4b4685; }
+html[data-theme="night"] .stat-tile.big { background: linear-gradient(120deg, #4a2c55, #463a3a); box-shadow: inset 0 0 0 2px #6b4a7e; }
+html[data-theme="night"] .stats-top-btn { background: linear-gradient(120deg, #463d2a, #45294a); box-shadow: inset 0 0 0 2px #7a6630; color: var(--ink); }
+html[data-theme="night"] .stats-top-k { color: #ffd36b; }
