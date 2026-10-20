@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#ffd6e8">
+  <meta name="description" content="Element Friends — a super cute element-combining game. Mix Water, Fire, Earth and Air to discover 156 kawaii friends!">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Element Friends">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+  <title>Element Friends ✨</title>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <button type="button" class="logo" id="logo" aria-label="Dance party! Make the friends on the playfield dance" title="Dance party! 🪩"></button>
+        <h1>Element <span>Friends</span></h1>
+      </div>
+      <div class="counter" id="counter" title="Friends discovered">
+        <span class="counter-star" aria-hidden="true">★</span>
+        <span><b id="count">4</b>/<span id="total">0</span></span>
+      </div>
+      <nav class="actions" aria-label="Game actions">
+        <button class="btn icon hint" id="btnHint" aria-label="Hint: show a possible combination"><span class="cool" aria-hidden="true"></span><i data-icon="bulb"></i><span class="lbl">Hint</span></button>
+        <button class="btn icon" id="btnBook" aria-label="Open collection"><i data-icon="book"></i><span class="lbl">Collection</span></button>
+        <button class="btn icon" id="btnClear" aria-label="Clear the playfield"><i data-icon="broom"></i><span class="lbl">Clear</span></button>
+        <button class="btn icon" id="btnMute" aria-label="Mute sounds" aria-pressed="false"><i data-icon="sound"></i></button>
+        <button class="btn icon" id="btnMenu" aria-label="Settings"><i data-icon="gear"></i></button>
+        <button class="btn chain-btn" id="btnWallet" aria-label="Connect a Starknet wallet (optional)" hidden><span class="chain-dot" aria-hidden="true"></span><i class="chain-ico" aria-hidden="true">✦</i><span class="lbl" id="btnWalletLbl">Connect</span></button>
+      </nav>
+    </header>
+
+    <main class="stage">
+      <section id="board" class="board" aria-label="Playfield. Drop or tap two friends to combine them.">
+        <div class="board-deco" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="board-stars" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="combo" id="combo" role="img" hidden><span class="combo-ring" aria-hidden="true"><span class="combo-star">🌟</span></span><span class="combo-lbl" aria-hidden="true">Combo</span><b class="combo-n" aria-hidden="true">×2</b></div>
+        <button type="button" class="tidy-btn" id="btnTidy" aria-label="Tidy up: line up the friends on the playfield (T)" hidden><span aria-hidden="true">✨</span><span class="tidy-lbl">Tidy</span></button>
+        <button type="button" class="photo-btn" id="btnPhoto" aria-label="Group photo: save a picture of the friends on the playfield" hidden><span aria-hidden="true">📸</span><span class="tidy-lbl">Photo</span></button>
+        <div class="board-tip" id="boardTip">Drag a friend here, then drop another one on top to mix them! ✨</div>
+      </section>
+      <aside id="drawer" class="drawer" aria-label="Your friends">
+        <button class="drawer-handle" id="drawerHandle" aria-label="Collapse or expand the friends drawer" aria-expanded="true"><span></span></button>
+        <div class="drawer-head">
+          <label class="search">
+            <i data-icon="search" aria-hidden="true"></i>
+            <input id="search" type="search" placeholder="Search friends…" aria-label="Search your friends" autocomplete="off">
+          </label>
+          <button type="button" class="btn sort-btn" id="btnSort" aria-label="Sort friends: A to Z. Tap to change."><span aria-hidden="true">🔤</span><span class="sort-lbl">A–Z</span></button>
+        </div>
+        <div class="trash" aria-hidden="true">Drop here to send home 🏠</div>
+        <div id="inv" class="inv" role="list" aria-label="Discovered friends"></div>
+        <p class="inv-help" id="invHelp">Tip: tap two friends to mix them, or drag them onto the playfield.</p>
+      </aside>
+    </main>
+  </div>
+
+  <!-- Discovery reveal -->
+  <div class="modal reveal" id="reveal" role="dialog" aria-modal="true" aria-labelledby="revealName" hidden>
+    <div class="reveal-card">
+      <div class="rays" aria-hidden="true"></div>
+      <div class="legend-badge" id="revealBadge">★ Legendary Friend ★</div>
+      <p class="reveal-combo" id="revealCombo" hidden></p>
+      <p class="reveal-kicker">You discovered</p>
+      <div class="reveal-art" id="revealArt"></div>
+      <h2 id="revealName">Steam!</h2>
+      <button type="button" class="jp-pill reveal-jp" id="revealJp" hidden></button>
+      <p class="reveal-desc" id="revealDesc"></p>
+      <p class="reveal-recipe" id="revealRecipe"></p>
+      <div class="reveal-actions">
+        <button class="btn big primary" id="revealOk">Yay! ♡</button>
+        <button class="btn chain" id="revealMint" hidden>✦ Mint on Starknet</button>
+      </div>
+      <p class="mint-status" id="revealMintStatus" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <!-- Collection -->
+  <div class="modal book" id="book" role="dialog" aria-modal="true" aria-labelledby="bookTitle" hidden>
+    <div class="sheet">
+      <header class="sheet-head">
+        <h2 id="bookTitle">Friend Collection</h2>
+        <button class="btn icon close" data-close aria-label="Close collection"><i data-icon="x"></i></button>
+      </header>
+      <div class="progress" aria-hidden="true"><div class="bar" id="bookBar"></div></div>
+      <p class="book-sub" id="bookSub"></p>
+      <div class="book-filter" id="bookFilter" role="radiogroup" aria-label="Show which friends">
+        <button type="button" class="btn filter-chip active" role="radio" aria-checked="true" data-filter="all">🌈 All <b class="n"></b></button>
+        <button type="button" class="btn filter-chip" role="radio" aria-checked="false" data-filter="found">💖 Found <b class="n"></b></button>
+        <button type="button" class="btn filter-chip" role="radio" aria-checked="false" data-filter="missing">❔ Missing <b class="n"></b></button>
+        <button type="button" class="btn filter-chip" role="radio" aria-checked="false" data-filter="legendary">★ Legendary <b class="n"></b></button>
+        <button type="button" class="btn filter-chip" role="radio" aria-checked="false" data-filter="faves">💗 Besties <b class="n"></b></button>
+      </div>
+      <div class="book-grid" id="bookGrid" role="list"></div>
+      <p class="book-empty" id="bookEmpty" hidden></p>
+    </div>
+  </div>
+
+  <!-- Detail -->
+  <div class="modal detail" id="detail" role="dialog" aria-modal="true" aria-labelledby="detailName" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close"><i data-icon="x"></i></button>
+      <button type="button" class="btn icon fave-btn" id="detailFave" aria-pressed="false" aria-label="Make best friend"><span class="h" aria-hidden="true">🤍</span></button>
+      <div class="detail-flip">
+        <button type="button" class="btn icon flip-btn" id="detailPrev" aria-label="Previous friend"><i data-icon="prev"></i></button>
+        <button type="button" class="detail-art pet" id="detailArt" aria-label="Pet this friend"></button>
+        <button type="button" class="btn icon flip-btn" id="detailNext" aria-label="Next friend"><i data-icon="next"></i></button>
+      </div>
+      <p class="flip-count" id="detailCount" aria-hidden="true"></p>
+      <p class="pet-tip" id="petTip" aria-hidden="true">Tap to pet 💕</p>
+      <h2 id="detailName"></h2>
+      <div class="nick-row" id="nickRow">
+        <button type="button" class="nick-pill" id="detailNick" aria-label="Give this friend a nickname"><span aria-hidden="true">🏷️</span> <span class="nick-txt" id="detailNickTxt">Give a nickname</span></button>
+        <form class="nick-form" id="nickForm" hidden autocomplete="off">
+          <label class="sr-only" for="nickInput" id="nickLbl">Nickname</label>
+          <input id="nickInput" class="nick-input" type="text" maxlength="40" placeholder="Sparkle bean…" spellcheck="false" autocapitalize="words" enterkeyhint="done" aria-describedby="nickHelp">
+          <button type="submit" class="btn primary nick-save" id="nickSave">Save</button>
+          <button type="button" class="btn nick-cancel" id="nickCancel" aria-label="Cancel nickname">✕</button>
+          <p class="muted nick-help" id="nickHelp">Up to 16 letters. Leave it empty to remove the nickname.</p>
+        </form>
+      </div>
+      <button type="button" class="jp-pill" id="detailJp" hidden></button>
+      <p class="since-pill" id="detailSince"></p>
+      <p class="shiny-pill" id="detailShiny" hidden></p>
+      <p id="detailDesc"></p>
+      <button type="button" class="btn sticker-btn" id="detailSticker" aria-label="Save a sticker picture of this friend"><span aria-hidden="true">📸</span> Save sticker</button>
+      <div id="detailRecipes" class="detail-recipes"></div>
+      <div id="detailChain" class="detail-chain"></div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="modal menu" id="menu" role="dialog" aria-modal="true" aria-labelledby="menuTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close settings"><i data-icon="x"></i></button>
+      <h2 id="menuTitle">Settings</h2>
+      <p class="muted">Element Friends saves your progress on this device automatically.</p>
+      <fieldset class="theme-pick">
+        <legend>Look</legend>
+        <div class="theme-row" role="radiogroup" aria-label="Day or night look">
+          <button type="button" class="btn theme-btn" role="radio" data-theme-pick="day" aria-checked="false">☀️ Day</button>
+          <button type="button" class="btn theme-btn" role="radio" data-theme-pick="auto" aria-checked="true">✨ Auto</button>
+          <button type="button" class="btn theme-btn" role="radio" data-theme-pick="night" aria-checked="false">🌙 Night</button>
+        </div>
+      </fieldset>
+      <fieldset class="theme-pick wall-pick">
+        <legend>Playfield 🎨</legend>
+        <div class="wall-row" id="wallRow" role="radiogroup" aria-label="Playfield wallpaper. Find more friends to unlock more."></div>
+      </fieldset>
+      <fieldset class="theme-pick size-pick">
+        <legend>Friend size 🔍</legend>
+        <div class="theme-row" role="radiogroup" aria-label="How big your friends look">
+          <button type="button" class="btn theme-btn size-btn" role="radio" data-size-pick="small" aria-checked="false"><span class="size-dot s" aria-hidden="true"></span> Small</button>
+          <button type="button" class="btn theme-btn size-btn" role="radio" data-size-pick="comfy" aria-checked="true"><span class="size-dot m" aria-hidden="true"></span> Comfy</button>
+          <button type="button" class="btn theme-btn size-btn" role="radio" data-size-pick="big" aria-checked="false"><span class="size-dot l" aria-hidden="true"></span> Big</button>
+        </div>
+      </fieldset>
+      <button type="button" class="btn wide toggle-btn active" id="btnMixCounts" role="switch" aria-checked="true">🔢 Show mixes left <span class="state">On</span></button>
+      <button type="button" class="btn wide toggle-btn" id="btnCalm" role="switch" aria-checked="false" aria-describedby="calmNote">🫧 Gentle mode <span class="state">Off</span></button>
+      <p class="muted calm-note" id="calmNote">Fewer wiggles and sparkles, and no buzzing. Nice for sensitive eyes and quiet times.</p>
+      <button type="button" class="btn wide toggle-btn" id="btnMusic" role="switch" aria-checked="false">🎵 Cozy music <span class="state">Off</span></button>
+      <button type="button" class="btn wide toggle-btn active" id="btnWxSound" role="switch" aria-checked="true">🌦️ Weather sounds <span class="state">On</span></button>
+      <button type="button" class="btn wide toggle-btn active costume-btn" id="btnCostumes" role="switch" aria-checked="true" aria-describedby="costumesNote" hidden>🎃 Costumes <span class="state">On</span></button>
+      <p class="muted calm-note" id="costumesNote" hidden>Spooky season (until Nov 5): friends on the playfield wear tiny witch hats, pumpkin caps and bat wings.</p>
+      <button type="button" class="btn wide toggle-btn active" id="btnJp" role="switch" aria-checked="true">🗾 Japanese names <span class="state">On</span></button>
+      <button type="button" class="btn wide toggle-btn" id="btnJpLabels" role="switch" aria-checked="false" aria-describedby="jpLabelsNote">あ Kana labels <span class="state">Off</span></button>
+      <p class="muted calm-note" id="jpLabelsNote">Friends wear their names in kana (みず, ひ…) to help you learn to read them.</p>
+      <button type="button" class="btn wide jp-quiz-btn" id="btnJpQuiz">🎌 Name quiz <span class="jp-best" id="jpQuizBest"></span></button>
+      <button type="button" class="btn wide omk-btn" id="btnOmikuji">🎋 Omikuji fortune <span class="jp-best omk-state" id="omikujiState"></span></button>
+      <button class="btn wide" id="btnAchievements">🏆 Achievements</button>
+      <button class="btn wide" id="btnBackup">💌 Friend Code (move devices)</button>
+      <button type="button" class="btn wide install-btn" id="btnInstall" aria-describedby="installNote" hidden>📲 Add to Home Screen</button>
+      <p class="muted calm-note" id="installNote" hidden>Keep Element Friends as a little app. It opens in one tap and plays offline.</p>
+      <button class="btn wide" id="btnHow">How to play</button>
+      <button class="btn wide keys-btn" id="btnKeys" aria-keyshortcuts="Shift+/">⌨️ Keyboard shortcuts</button>
+      <button class="btn wide danger" id="btnReset">Reset progress…</button>
+    </div>
+  </div>
+
+  <!-- Friend Code: move progress between devices, offline -->
+  <div class="modal backup" id="backup" role="dialog" aria-modal="true" aria-labelledby="backupTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close Friend Code"><i data-icon="x"></i></button>
+      <h2 id="backupTitle">💌 Friend Code</h2>
+      <p class="muted">Copy this code to bring your friends to another phone or laptop. No account or wallet needed!</p>
+      <label class="backup-lbl" for="backupCode" id="backupCount">This code holds 4 friends 💖</label>
+      <div class="backup-row">
+        <input id="backupCode" class="backup-code" type="text" readonly spellcheck="false" aria-describedby="backupCount">
+        <button type="button" class="btn primary backup-copy" id="backupCopy">📋 Copy</button>
+      </div>
+      <label class="backup-lbl" for="backupPaste">Got a code from another device? Paste it here:</label>
+      <div class="backup-row">
+        <input id="backupPaste" class="backup-code" type="text" placeholder="EF1-…" spellcheck="false" autocomplete="off" autocapitalize="off">
+        <button type="button" class="btn backup-go" id="backupRestore">🏠 Bring here</button>
+      </div>
+      <p class="backup-note">Friends in the code join the ones you already have. Nobody gets lost!</p>
+      <p class="backup-status" id="backupStatus" role="status" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <!-- Home Screen help (iPhone / iPad Safari) -->
+  <div class="modal installhelp" id="installHelp" role="dialog" aria-modal="true" aria-labelledby="installTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close"><i data-icon="x"></i></button>
+      <div class="install-art" id="installArt" aria-hidden="true"></div>
+      <h2 id="installTitle">📲 Add to Home Screen</h2>
+      <p class="muted">Two little taps and your friends live on your home screen, even with no internet!</p>
+      <ol class="install-steps">
+        <li><span class="install-ico" aria-hidden="true">⬆️</span> <span>Tap the <b>Share</b> button in Safari's toolbar.</span></li>
+        <li><span class="install-ico" aria-hidden="true">➕</span> <span>Scroll a little and pick <b>Add to Home Screen</b>.</span></li>
+        <li><span class="install-ico" aria-hidden="true">🏠</span> <span>Tap <b>Add</b>. Your friends will wave hello from the new icon!</span></li>
+      </ol>
+      <button type="button" class="btn primary wide" id="installDone">Got it! 💕</button>
+    </div>
+  </div>
+
+  <!-- Confirm -->
+  <div class="modal confirm" id="confirm" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText" hidden>
+    <div class="sheet small">
+      <div class="confirm-art" id="confirmArt"></div>
+      <h2 id="confirmTitle">Start over?</h2>
+      <p id="confirmText">All your discovered friends will go back to sleep. This can't be undone!</p>
+      <div class="row">
+        <button class="btn" id="confirmNo">Keep my friends</button>
+        <button class="btn danger" id="confirmYes">Yes, reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Starknet: wallet picker -->
+  <div class="modal wallets" id="wallets" role="dialog" aria-modal="true" aria-labelledby="walletsTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close"><i data-icon="x"></i></button>
+      <h2 id="walletsTitle">Connect a Starknet wallet</h2>
+      <p class="muted">Optional! Mint your friends as cute collectibles on Starknet <b id="walletsNet">Sepolia testnet</b>. Play with Cartridge for free mints (no seed phrase) — or connect Ready / Braavos.</p>
+      <div id="walletList" class="wallet-list"></div>
+    </div>
+  </div>
+
+  <!-- Starknet: panel -->
+  <div class="modal chainpanel" id="chainPanel" role="dialog" aria-modal="true" aria-labelledby="chainTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close"><i data-icon="x"></i></button>
+      <h2 id="chainTitle">✦ Starknet</h2>
+      <div id="chainBody"></div>
+    </div>
+  </div>
+
+
+  <!-- Achievements -->
+  <div class="modal achievements" id="achievements" role="dialog" aria-modal="true" aria-labelledby="achTitle" hidden>
+    <div class="sheet">
+      <header class="sheet-head">
+        <h2 id="achTitle">Achievements</h2>
+        <button class="btn icon close" data-close aria-label="Close achievements"><i data-icon="x"></i></button>
+      </header>
+      <p class="book-sub" id="achSub"></p>
+      <div class="ach-grid" id="achGrid" role="list"></div>
+    </div>
+  </div>
+
+  <!-- How to -->
+  <div class="modal jpquiz" id="jpQuiz" role="dialog" aria-modal="true" aria-labelledby="jpQuizTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close name quiz"><i data-icon="x"></i></button>
+      <h2 id="jpQuizTitle">🎌 Name quiz</h2>
+      <p class="muted jpq-progress" id="jpqProgress"></p>
+      <div class="jpq-stage" id="jpqStage">
+        <div class="jpq-friend" id="jpqArt" aria-hidden="true"></div>
+        <p class="jpq-ask" id="jpqAsk"></p>
+        <div class="jpq-choices" id="jpqChoices" role="group" aria-labelledby="jpqAsk"></div>
+        <p class="jpq-say" id="jpqSay" aria-live="polite"></p>
+      </div>
+      <div class="jpq-done" id="jpqDone" hidden>
+        <div class="jpq-friend" id="jpqDoneArt" aria-hidden="true"></div>
+        <p class="jpq-score" id="jpqScore"></p>
+        <p class="muted" id="jpqBestNote"></p>
+        <button type="button" class="btn big primary" id="jpqAgain">Play again</button>
+      </div>
+      <button type="button" class="btn primary jpq-next" id="jpqNext" hidden>Next ➜</button>
+    </div>
+  </div>
+  <div class="modal omikuji" id="omikuji" role="dialog" aria-modal="true" aria-labelledby="omikujiTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close omikuji"><i data-icon="x"></i></button>
+      <h2 id="omikujiTitle">🎋 Omikuji <span class="omk-title-jp" lang="ja">おみくじ</span></h2>
+      <div class="omk-boxwrap" id="omkBoxWrap">
+        <p class="muted">A little fortune from your friends, once a day. Shake the shrine box!</p>
+        <button type="button" class="omk-box" id="omkBox" tabindex="-1" aria-hidden="true">
+          <span class="omk-stick"></span><span class="omk-body"><span class="omk-label" lang="ja">御神籤</span></span>
+        </button>
+        <button type="button" class="btn big primary" id="omkShake">Shake the box 🎋</button>
+      </div>
+      <div class="omk-slip" id="omkSlip" hidden>
+        <div class="omk-rank" id="omkRank"></div>
+        <p class="omk-en" id="omkEn"></p>
+        <div class="omk-friend" id="omkArt" aria-hidden="true"></div>
+        <p class="omk-who" id="omkFriend"></p>
+        <p class="omk-line" id="omkLine"></p>
+        <p class="omk-lucky" id="omkLucky"></p>
+        <p class="muted omk-next" id="omkNext"></p>
+        <button type="button" class="btn primary" id="omkDone">Arigatō! 💕</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal keys" id="keys" role="dialog" aria-modal="true" aria-labelledby="keysTitle" aria-describedby="keysNote" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close keyboard shortcuts"><i data-icon="x"></i></button>
+      <h2 id="keysTitle">⌨️ Keyboard shortcuts</h2>
+      <div class="keys-art" id="keysArt" aria-hidden="true"></div>
+      <p class="muted" id="keysNote">Play the whole game without a mouse! Press <kbd>?</kbd> any time to see this list.</p>
+      <dl class="keys-list" id="keysList">
+        <div><dt><kbd>Tab</kbd></dt><dd>Move between buttons and friends</dd></div>
+        <div><dt><kbd>Enter</kbd> <kbd>Space</kbd></dt><dd>Pick a friend, then pick another to mix them</dd></div>
+        <div><dt><kbd>D</kbd></dt><dd>Make a twin of the playfield friend you're on</dd></div>
+        <div><dt><kbd>Delete</kbd></dt><dd>Take that friend off the playfield</dd></div>
+        <div><dt><kbd>T</kbd></dt><dd>Tidy the playfield into neat rows</dd></div>
+        <div><dt><kbd>H</kbd></dt><dd>Get a hint</dd></div>
+        <div><dt><kbd>/</kbd></dt><dd>Jump to the friend search</dd></div>
+        <div><dt><kbd>C</kbd></dt><dd>Open your Collection</dd></div>
+        <div><dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Flip through friends on a friend's page</dd></div>
+        <div><dt><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Z</kbd></dt><dd>Undo a Clear</dd></div>
+        <div><dt><kbd>Esc</kbd></dt><dd>Close a sheet, or let go of a picked friend</dd></div>
+        <div><dt><kbd>?</kbd></dt><dd>Show this list</dd></div>
+      </dl>
+      <button class="btn big primary" data-close>Got it!</button>
+    </div>
+  </div>
+  <div class="modal howto" id="howto" role="dialog" aria-modal="true" aria-labelledby="howTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close"><i data-icon="x"></i></button>
+      <h2 id="howTitle">How to play</h2>
+      <div class="how-art" id="howArt"></div>
+      <ol class="how-list">
+        <li><b>Drag</b> a friend from your collection onto the playfield.</li>
+        <li><b>Drop</b> another friend on top of it to mix them.</li>
+        <li>On a phone, <b>tap two friends</b> to mix (or press &amp; hold to drag).</li>
+        <li>Each day a <b>Daily Friend</b> appears on the playfield. Make it to grow your 🔥 streak (tap it for a clue)!</li>
+        <li>Prefer a cozy evening? Settings has <b>Day / Auto / Night</b> look (Auto follows your clock).</li>
+        <li>Earn cute <b>Achievements</b> badges as you play — open them from Settings (offline, no wallet)! Hearing Japanese names and acing the Name quiz earns badges too 🗾💮</li>
+        <li>The little number on each friend shows how many <b>new friends it can still help make</b>. A ✓ means it's all mixed out!</li>
+        <li>Open a friend from your collection and <b>tap it to pet it</b>: every friend has its own little voice and wiggle 💕</li>
+        <li>While dragging, a tiny bubble peeks at the friend underneath: <b>?</b> means new, <b>💭 tried</b> means that pair didn't mix before, and a picture shows a mix you already know.</li>
+        <li>Tap the <b>sort</b> pill next to search to line up your friends <b>A–Z</b>, <b>Newest</b> first, or by <b>Most mixes</b> left.</li>
+        <li>Cleared the playfield by accident? Tap <b>↩ Undo</b> right after (or press Ctrl/⌘+Z) to bring your friends back.</li>
+        <li><b>Double-tap</b> (or double-click) a friend on the playfield to make a <b>twin</b>, then mix the pair: some friends love meeting themselves! Keyboard: focus a friend and press <b>D</b>.</li>
+        <li>In a friend's page, tap <b>‹ ›</b>, swipe sideways or press the <b>← →</b> arrow keys to flip through your found friends.</li>
+        <li>In the <b>Collection</b>, tap <b>💖 Found</b>, <b>❔ Missing</b> or <b>★ Legendary</b> to see just those friends.</li>
+        <li>Playfield getting messy? Tap <b>✨ Tidy</b> in its corner (or press <b>T</b>) and your friends hop into neat little rows, with twins side by side.</li>
+        <li>Want a memory? With two or more friends on the playfield, tap <b>📸 Photo</b> and they line up for a cute group photo you can save or share.</li>
+        <li>Leave the playfield quiet for a little while and your friends get <b>sleepy</b> 💤. Tap anywhere to wake them up!</li>
+        <li>Want a little tune? Turn on <b>🎵 Cozy music</b> in Settings for a soft music-box lullaby. It plays slower at night, hushes when your friends doze off, and the mute button silences it too.</li>
+        <li>Switching devices? Settings has a <b>💌 Friend Code</b>: copy it on one device and paste it on the other to bring your friends along.</li>
+        <li>Tap the <b>🤍 heart</b> on a friend's page to make them a <b>best friend</b> 💗. Besties float to the top of your friends drawer, and the <b>💗 Besties</b> chip in the Collection shows just them.</li>
+        <li>Tap <b>📸 Save sticker</b> on a friend's page to keep a cute picture card of them (on a phone you can share it straight to your photos or a chat).</li>
+        <li>Now and then a mix comes out <b>shiny</b> ✨ with a rainbow glow and twinkles! Shiny friends stay shiny on the playfield, and the Collection keeps a ✨ on every friend you've met a shiny one of.</li>
+        <li>Open a friend in the <b>Collection</b> to see the day you met 📅. Old friends from before this update just say "An old friend" 💛.</li>
+        <li>Find new friends <b>back to back</b> (within 30 seconds of the last one) to build a <b>🌟 Combo</b>! The ring on the combo pill shows how much time is left, and the game remembers your best combo.</li>
+        <li>Want to name a friend? Open it in your Collection and tap <b>🏷️ Give a nickname</b>. Search finds friends by nickname too.</li>
+        <li>On a friend's card, tap an ingredient or a <b>Helped make 🐾</b> friend to hop straight to their card, and see how many friends are still hiding.</li>
+        <li>Prefer things calm? Turn on <b>🫧 Gentle mode</b> in Settings for fewer wiggles and sparkles and no phone buzzing.</li>
+        <li>Friends too tiny (or too crowded)? Settings has <b>🔍 Friend size</b>: Small, Comfy or Big, for the playfield and your friends drawer.</li>
+        <li>Find more friends to unlock cute <b>🎨 Playfield</b> wallpapers (clouds, candy stripes, hearts, stars and a rainbow). Pick one in Settings!</li>
+        <li>Want the game on your phone? Settings has <b>📲 Add to Home Screen</b> (when your browser supports it), so Element Friends opens in one tap and plays offline.</li>
+        <li>Each autumn (Oct 15 to Nov 5) a spooky-cute <b>🎃 Pumpkin patch</b> playfield pops up for everyone. Find it in Settings! In that season your friends on the playfield also dress up in tiny 🎃 costumes (switch them off in Settings).</li>
+        <li>Leave your friends be for a moment and they <b>💬 chat</b>: little speech bubbles pop up as they say hi to each other.</li>
+        <li>Tap the little <b>⭐ star</b> next to the game's name for a <b>🪩 dance party</b>: every friend on the playfield bops along to a happy tune!</li>
+        <li>On a phone or tablet, pull any sheet (like the Collection or Settings) <b>👇 down by its top</b> to tuck it away. The little bar at the top shows where to grab.</li>
+        <li>Playing with a keyboard? Press <b>?</b> (or open <b>⌨️ Keyboard shortcuts</b> in Settings) to see every key, like <b>H</b> for a hint, <b>C</b> for your Collection and <b>/</b> to search.</li>
+        <li>Every friend's card shows its <b>🗾 Japanese name</b>, and so does the "You discovered" pop-up. Tap it to hear how it sounds!</li>
+        <li>Turn on <b>あ Kana labels</b> in Settings and your friends wear their names in kana, so you learn to read them as you play.</li>
+        <li>Some friends bring their own weather 🌦️: put Rain, Snow, Sakura, Rainbow, Sun or Firefly on the playfield and watch the sky change. The newest one wins! Each weather has its own soft sound too (pitter-patter rain, tinkly snow); switch <b>🌦️ Weather sounds</b> off in Settings if you like it quiet.</li>
+        <li>Try the <b>🎌 Name quiz</b> in Settings: pick the right Japanese name for five of your friends.</li>
+        <li>Once a day, shake the <b>🎋 Omikuji</b> box in Settings for a cute fortune slip, a lucky friend and a lucky element to try mixing.</li>
+        <li>Been away a while? A friend pops up to <b>👋 wave hello</b> when you come back (tap it to say hi back).</li>
+        <li>Stuck? Press <b>Hint</b> for a clue. Can you find all the legendary friends?</li>
+      </ol>
+      <button class="btn big primary" data-close>Let's play!</button>
+    </div>
+  </div>
+
+  <div class="hintcard" id="hintcard" role="status" aria-live="polite" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="undo-bar" id="undoBar" hidden><span id="undoMsg"></span><button type="button" class="btn undo-btn" id="btnUndo" aria-label="Undo clear: bring your friends back">↩ Undo</button></div>
+  <div class="fx" id="fx" aria-hidden="true"></div>
+  <div class="sr-only" id="announce" aria-live="assertive"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/sticker.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/daily.js"></script>
+  <script src="js/welcome.js"></script>
+  <script src="js/japanese.js"></script>
+  <script src="js/omikuji.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/costumes.js"></script>
+  <!-- optional Starknet layer: the game works fully without it (vendor bundle is lazy-loaded, local only) -->
+  <script src="js/chain-ids.js"></script>
+  <script src="js/backup.js"></script>
+  <script src="js/install.js"></script>
+  <script src="js/starknet-config.js"></script>
+  <script src="js/starknet-abi.js"></script>
+  <script src="js/starknet.js"></script>
+</body>
+</html>
