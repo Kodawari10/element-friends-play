@@ -130,6 +130,18 @@
       const b = ev.target.closest('[data-open]'); if (!b || !G.found.has(b.dataset.open)) return;
       G.openDetail(b.dataset.open);
     });
+    // 🎖️ Rank up: when a discovery lifts you to a new Mixer rank, the reveal card says so
+    document.addEventListener('ef:reveal', ev => {
+      const el = document.getElementById('revealRank'); if (!el) return;
+      const id = ev.detail && ev.detail.id, list = (G.state && Array.isArray(G.state.found)) ? G.state.found : [];
+      const n = list.indexOf(id) + 1, total = D.elements.length;
+      const before = n > 0 ? rankOf(n - 1, total) : null, now = n > 0 ? rankOf(n, total) : null;
+      if (!now || now.index <= before.index) { el.hidden = true; el.textContent = ''; return; }
+      el.hidden = false; el.dataset.rank = String(now.index);
+      el.textContent = `🎖️ Rank up! You're now a ${now.emoji} ${now.name}!`;
+      setTimeout(() => G.ui.announce(`Rank up! You're now a ${now.name}.`), 900);
+      document.dispatchEvent(new CustomEvent('ef:rankup', { detail: { index: now.index, name: now.name, found: n } }));
+    });
     window.EF_STATS = { open: openStats, snapshot: () => snapshot(), render, rank: (f, t) => rankOf(f, t) };
   }
   if (window.EF_GAME) init(); else document.addEventListener('ef:ready', init, { once: true });

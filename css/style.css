@@ -1337,6 +1337,12 @@ html.calm .milestones .ms.lit { animation: none; }
 .reveal-milestone { display: block; width: fit-content; margin: 0 auto 4px; padding: 3px 12px; border-radius: 99px; background: linear-gradient(90deg, #fff6c9, #ffe9f4); border: 2px solid #ffd36b; color: #b07a00; font-weight: 900; font-size: 14px; }
 .reveal-milestone[hidden] { display: none; }
 html[data-theme="night"] .reveal-milestone { background: #3a3158; border-color: #e6c46a; color: #ffe08a; }
+.reveal-rank { display: block; width: fit-content; max-width: 100%; margin: 0 auto 4px; padding: 3px 12px; border-radius: 99px; background: linear-gradient(90deg, #ffe3f1, #efe4ff); border: 2px solid #ff9cc4; color: #c2407e; font-weight: 900; font-size: 14px; animation: rankPop .6s cubic-bezier(.3,1.6,.5,1) both; }
+.reveal-rank[hidden] { display: none; }
+html[data-theme="night"] .reveal-rank { background: #3d2f55; border-color: #ff9cc4; color: #ffc2de; }
+@keyframes rankPop { 0% { transform: scale(.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+html.calm .reveal-rank { animation: none; }
+@media (prefers-reduced-motion: reduce) { .reveal-rank { animation: none; } }
 
 /* 🎲 Surprise me (Collection header) */
 .sheet-head-actions { display: flex; align-items: center; gap: 8px; }
