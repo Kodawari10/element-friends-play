@@ -37,7 +37,23 @@
     tea: 'おちゃ|ocha|お茶', boba: 'タピオカ|tapioka|', honey: 'はちみつ|hachimitsu|蜂蜜', candy: 'あめ|ame|飴', cottoncandy: 'わたあめ|wataame|綿あめ',
     pie: 'アップルパイ|appurupai|', cocoa: 'ココア|kokoa|', pancake: 'パンケーキ|pankēki|', pudding: 'プリン|purin|', mochi: 'もち|mochi|餅', onigiri: 'おにぎり|onigiri|', pumpkin: 'かぼちゃ|kabocha|',
     planet: 'わくせい|wakusei|惑星', galaxy: 'ぎんが|ginga|銀河', comet: 'すいせい|suisei|彗星', alien: 'うちゅうじん|uchūjin|宇宙人',
-    eclipse: 'にっしょく|nisshoku|日食', universe: 'うちゅう|uchū|宇宙'
+    eclipse: 'にっしょく|nisshoku|日食', universe: 'うちゅう|uchū|宇宙',
+    frost: 'しも|shimo|霜', hail: 'ひょう|hyō|雹', blizzard: 'ふぶき|fubuki|吹雪', fog: 'もや|moya|靄',
+    sunset: 'ゆうやけ|yūyake|夕焼け', sunrise: 'あさやけ|asayake|朝焼け', meteor: 'りゅうせい|ryūsei|流星',
+    nebula: 'せいうん|seiun|星雲', satellite: 'えいせい|eisei|衛星', telescope: 'ぼうえんきょう|bōenkyō|望遠鏡',
+    moonlight: 'げっこう|gekkō|月光', rose: 'ばら|bara|薔薇', sunflower: 'ひまわり|himawari|向日葵',
+    daisy: 'ひなぎく|hinagiku|雛菊', lily: 'すいれん|suiren|睡蓮', leaf: 'はっぱ|happa|葉っぱ', pine: 'まつ|matsu|松',
+    cookie: 'クッキー|kukkī|', chocolate: 'チョコレート|chokorēto|', jam: 'ジャム|jamu|', cheese: 'チーズ|chīzu|',
+    sandwich: 'サンドイッチ|sandoicchi|', soup: 'スープ|sūpu|', dango: 'だんご|dango|団子',
+    deer: 'しか|shika|鹿', squirrel: 'りす|risu|栗鼠', swan: 'はくちょう|hakuchō|白鳥', koi: 'こい|koi|鯉',
+    seahorse: 'たつのおとしご|tatsunootoshigo|竜の落とし子', pig: 'ぶた|buta|豚', parrot: 'おうむ|ōmu|鸚鵡', kappa: 'かっぱ|kappa|河童',
+    fireworks: 'はなび|hanabi|花火', present: 'プレゼント|purezento|', sweater: 'セーター|sētā|',
+    paintedegg: 'いろたまご|irotamago|色卵', snowangel: 'ゆきのてんし|yukinotenshi|雪の天使',
+    music: 'おんがく|ongaku|音楽', flute: 'ふえ|fue|笛', bell: 'すず|suzu|鈴', drum: 'たいこ|taiko|太鼓',
+    harp: 'ハープ|hāpu|', lullaby: 'こもりうた|komoriuta|子守唄', paper: 'かみ|kami|紙', book: 'ほん|hon|本',
+    candle: 'ろうそく|rōsoku|蝋燭', pillow: 'まくら|makura|枕', blanket: 'もうふ|mōfu|毛布',
+    ruby: 'ルビー|rubī|', sapphire: 'サファイア|safaia|', emerald: 'エメラルド|emerarudo|', gold: 'きん|kin|金',
+    ring: 'ゆびわ|yubiwa|指輪', dream: 'ゆめ|yume|夢', wish: 'ねがい|negai|願い', harmony: 'ハーモニー|hāmonī|'
   };
   const D = window.EF_DATA;
   let G, cfg, voice = null, curId = null, revealId = null;

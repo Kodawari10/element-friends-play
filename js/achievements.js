@@ -15,7 +15,7 @@
     { id: 'collector', name: 'Friend Collector', emoji: '💕', blurb: 'Discover 100 friends.', when: s => s.discovered >= 100 },
     { id: 'complete', name: 'Complete Set', emoji: '👑', blurb: 'Discover every single friend!', when: s => s.discovered >= s.total },
     { id: 'legendary_spark', name: 'Legendary Spark', emoji: '✨', blurb: 'Meet your first legendary friend.', when: s => s.legendCount >= 1 },
-    { id: 'legend_keeper', name: 'Legend Keeper', emoji: '🌟', blurb: 'Collect all 5 legendary friends.', when: s => s.legendCount >= s.legendTotal },
+    { id: 'legend_keeper', name: 'Legend Keeper', emoji: '🌟', blurb: 'Collect every legendary friend.', when: s => s.legendCount >= s.legendTotal },
     { id: 'mix_master', name: 'Mix Master', emoji: '🧪', blurb: 'Complete 50 successful mixes.', when: s => s.mixes >= 50 },
     { id: 'streak_3', name: 'Daily Streak 3', emoji: '🔥', blurb: 'Keep a 3-day Daily Friend streak.', when: s => s.dailyBest >= 3 },
     { id: 'streak_7', name: 'Daily Streak 7', emoji: '🌈', blurb: 'Keep a 7-day Daily Friend streak.', when: s => s.dailyBest >= 7 },

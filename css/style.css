@@ -335,6 +335,8 @@ html[data-theme="night"] .faucet-link { background: #2c3a66; border-color: #6fa8
 .chain-sub { color: #6e5cd6; }
 .detail-chain { margin-top: 10px; }
 .chain-chip { display: inline-block; background: linear-gradient(90deg, #efe8ff, #e2f1ff); color: #5b47b8; font-weight: 800; padding: 6px 14px; border-radius: 99px; }
+.chain-chip.soon { background: linear-gradient(90deg, #fff6e8, #ffe4f1); color: #9a6240; }
+.btn.chain.soon[disabled] { filter: none; background: linear-gradient(180deg, #ffe7c2, #ffd0e4); color: #8a5a3a; box-shadow: 0 4px 0 #e7b89a, var(--shadow); }
 .world-first { margin: 10px auto 0; max-width: 340px; font-size: 14px; font-weight: 700; color: #5b47b8; background: #f3efff; border: 2px solid #e2d9ff; border-radius: 16px; padding: 8px 12px; line-height: 1.35; }
 .world-first.mine { background: linear-gradient(90deg, #fff4c7, #ffe3f1); border-color: #ffd36e; color: #8a5a00; box-shadow: 0 2px 10px rgba(255, 196, 80, .35); }
 .world-first.open { border-style: dashed; }

@@ -14,6 +14,9 @@ window.EF_STARKNET_CONFIG = {
   chainId: '0x534e5f5345504f4c4941',          // SN_SEPOLIA
   rpcUrl: 'https://starknet-sepolia.drpc.org', // any Starknet JSON-RPC (v0.8+) endpoint for Sepolia
   contractAddress: '0x018dddbcb447db0dc705e8587f425c64e5921c306f121fa47275cc486c5f6545', // ElementFriends on Sepolia (deployed 2026-10-20)
+  // What that live contract can mint today. Friends past this count say "minting coming soon"
+  // until the owner appends them (add_elements + add_recipes). A matching on-chain fingerprint lifts the cap.
+  live: { elementCount: 160, fingerprint: '0x7d680f26' },
   explorerTx: 'https://sepolia.voyager.online/tx/',
   explorerContract: 'https://sepolia.voyager.online/contract/',
   explorerNft: 'https://sepolia.voyager.online/nft/',     // + <contract>/<tokenId>: a friend's collectible page

@@ -11,7 +11,7 @@
   const G = window.EF_GAME; const board = document.getElementById('board');
   if (!G || !board) return;
   const KEY = 'element-friends-weather-v1';
-  const BY_FRIEND = { rain: 'rain', storm: 'storm', snow: 'snow', snowman: 'snow', snowglobe: 'snow', sakura: 'petals', rainbow: 'rainbow', sun: 'sun', firefly: 'glow' };
+  const BY_FRIEND = { rain: 'rain', storm: 'storm', snow: 'snow', snowman: 'snow', snowglobe: 'snow', sakura: 'petals', rainbow: 'rainbow', sun: 'sun', firefly: 'glow', hail: 'rain', blizzard: 'snow', frost: 'snow', snowangel: 'snow', sunset: 'sun', sunrise: 'sun', fireworks: 'glow' };
   const HELLO = {
     rain: '🌧️ Rain brought a little shower to the playfield!',
     storm: '⛈️ Storm is feeling grumbly… pitter-patter!',

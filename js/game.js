@@ -1560,7 +1560,7 @@
     if (state.board === null) { placeStarters(); if (!newFriends) setTimeout(() => toast('Drop Water onto Fire and see what happens! 💧🔥', 4200), 600); }
     else restoreBoard();
     seasonNews();
-    if (newFriends) { save(); setTimeout(() => { toast(`🎀 ${newFriends} new friend${newFriends > 1 ? 's' : ''} moved in! Look for a pumpkin, a little witch, a lucky black cat and a tanuki 🎃✨`, 5200); announce(`${newFriends} new friends were added to the game.`); }, 700); }
+    if (newFriends) { save(); setTimeout(() => { toast(`🎀 ${newFriends} new friend${newFriends > 1 ? 's' : ''} moved in! Look for a rose, a little flute, a ruby and a dream 🌹✨`, 5200); announce(`${newFriends} new friends were added to the game.`); }, 700); }
   });
 
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {

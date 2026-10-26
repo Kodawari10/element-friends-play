@@ -175,6 +175,72 @@
   el('alien', 'Alien', 'egg', '#a8f0a0', ['antennae'], 'big', 'o', 'Came from far away just to be your friend.', { eyesScale: 1.25 });
   el('eclipse', 'Eclipse', 'round', '#6a6290', ['corona'], 'sleepy', 'smile', 'When the Sun and Moon share a secret hug.', { scale: 0.84 });
   el('universe', 'Universe', 'round', '#4b4a8f', ['galaxySwirl', 'starDots', 'ring:#ffb3e6', 'crown', 'sparkles'], 'star', 'open', 'Everything, everywhere, all cuddled together!', { final: true, scale: 0.86 });
+  // ---- more sky & weather ----
+  el('frost', 'Frost', 'fluff', '#e7f6ff', ['snowflake', 'iceShine'], 'sleepy', 'smile', 'Paints lacy windows and whispers a tiny brr.', { blush: '#9ecbff' });
+  el('hail', 'Hail', 'round', '#d5e4ff', ['iceShine', 'drops'], 'big', 'o', 'Little ice marbles that bounce, then say sorry.');
+  el('blizzard', 'Blizzard', 'cloud', '#eef4ff', ['snowflake', 'windLines'], 'sleepy', 'blow', 'A swirly snow-hug that tucks the whole town in.');
+  el('fog', 'Fog', 'ghost', '#d9d6ea', ['swirls', 'miniClouds'], 'sleepy', 'smile', 'A shy blanket for the hills. Peekaboo!');
+  el('sunset', 'Sunset', 'round', '#ffb07a', ['sunrays:#ff8a6a', 'miniClouds'], 'happy', 'smile', 'Paints the sky peach and pink, then yawns goodnight.');
+  el('sunrise', 'Sunrise', 'round', '#ffd2a8', ['sunrays:#ffe08a', 'sparkles'], 'happy', 'open', 'A gentle hello that wakes every bird.');
+  // ---- more space ----
+  el('meteor', 'Meteor', 'round', '#d7ecff', ['cometTail', 'sparkles'], 'big', 'open', 'A wish with a tail. Make it quick!', { scale: 0.82 });
+  el('nebula', 'Nebula', 'cloud', '#c9b6ff', ['galaxySwirl', 'starDots'], 'sleepy', 'smile', 'A cotton-candy cloud where baby stars take naps.');
+  el('satellite', 'Satellite', 'round', '#d5deee', ['antenna', 'metalShine', 'sparkles'], 'big', 'smile', 'Beep! Waves at home every ninety minutes.');
+  el('telescope', 'Telescope', 'bean', '#d5e8ff', ['glassShine', 'starDots'], 'star', 'o', 'Squints at the sky and finds faraway friends.', { glassy: true, scale: 0.9 });
+  el('moonlight', 'Moonlight', 'round', '#fff6d0', ['glow', 'sparkles', 'craters'], 'sleepy', 'smile', 'A silver night-light that tucks the owls in.');
+  // ---- more plants & flowers ----
+  el('rose', 'Rose', 'round', '#ff8fb3', ['petals:#ff5c8a', 'stemLeaf'], 'wink', 'smile', 'Says I like you without using any words.', { scale: 0.86 });
+  el('sunflower', 'Sunflower', 'round', '#ffd15c', ['petals:#ffb347', 'stemLeaf'], 'happy', 'open', 'Turns its face to follow the sunshine all day.', { scale: 0.86 });
+  el('daisy', 'Daisy', 'round', '#ffffff', ['petals:#fff3b0', 'stemLeaf'], 'happy', 'smile', 'A sunny little face hiding in the grass.', { scale: 0.86 });
+  el('lily', 'Lily', 'round', '#f4e9ff', ['petals:#e4d4ff', 'lilypad'], 'happy', 'smile', 'Floats on the lake and hosts frog tea parties.', { scale: 0.86 });
+  el('leaf', 'Leaf', 'drop', '#62c96e', ['leafVein', 'windLines'], 'happy', 'smile', 'Twists and twirls on the way down to say hi.');
+  el('pine', 'Pine', 'cloud', '#2f7d4a', ['trunk', 'snowcap'], 'happy', 'smile', 'Keeps a cozy coat all winter and smells like holidays.');
+  // ---- more food & sweets ----
+  el('cookie', 'Cookie', 'round', '#e8b56a', ['speckles:#8a5a32', 'cheeks'], 'happy', 'smile', 'Crunchy, golden and full of chocolate chips.');
+  el('chocolate', 'Chocolate', 'squat', '#7a4a32', ['sparkles', 'heartTop'], 'happy', 'tongue', 'Melts into a hug the moment you smile.');
+  el('jam', 'Jam', 'bowl', '#ff6b8a', ['honeyDrip', 'sparkles'], 'happy', 'smile', 'Sweet, sticky and excellent on warm toast.');
+  el('cheese', 'Cheese', 'tri', '#ffe27a', ['speckles:#ffd15c'], 'wink', 'smile', 'Waited patiently in the dark and came out delicious. Say cheese!');
+  el('sandwich', 'Sandwich', 'squat', '#f6d7a2', ['crust', 'breadLines', 'speckles:#ffe27a'], 'happy', 'open', 'Two slices of bread giving cheese a great big hug.');
+  el('soup', 'Soup', 'bowl', '#ffb36b', ['steamTop', 'heartTop'], 'happy', 'smile', 'A warm pumpkin hug you can eat with a spoon.');
+  el('dango', 'Dango', 'bean', '#ffd0e0', ['stick', 'cheeks', 'sparkles'], 'happy', 'cat', 'Three squishy dumplings on a stick. Dango dango!', { scale: 0.9 });
+  // ---- more animals & creatures ----
+  el('deer', 'Deer', 'blob', '#c9956a', ['antlers', 'earsSmall', 'muzzle:#f2d0b0'], 'big', 'smile', 'Steps softly and wears the tiniest branch-antlers.');
+  el('squirrel', 'Squirrel', 'round', '#d08a55', ['earsHamster', 'tailFox', 'cheeks'], 'big', 'smile', 'Hides snacks in its cheeks for a rainy day.', { scale: 0.88 });
+  el('swan', 'Swan', 'round', '#ffffff', ['wingsSmall:#f7f7f7', 'curl'], 'happy', 'beak', 'Glides by like a little white boat. So elegant!');
+  el('koi', 'Koi', 'blob', '#ff8a6a', ['spots:#ffffff', 'fin', 'tailFish', 'scales'], 'happy', 'o', 'A swimming flower that grants gentle wishes.');
+  el('seahorse', 'Seahorse', 'bean', '#ffb36b', ['fin', 'curlTop'], 'big', 'smile', 'An upright little horse of the sea. Neigh-blub!', { scale: 0.86 });
+  el('pig', 'Pig', 'round', '#ffb3c7', ['earsSmall', 'muzzle:#ff8fb3', 'cheeks'], 'happy', 'smile', 'Oink! Rolls in happy mud, then asks for a hug.');
+  el('parrot', 'Parrot', 'round', '#7ddea0', ['crest:#ff6b8a', 'wingsSmall:#ffd15c'], 'big', 'beak', 'Squawks your name, then giggles about it.');
+  el('kappa', 'Kappa', 'blob', '#7dce8a', ['kappaDish', 'frogBumps'], 'big', 'wide', 'A river kid with a puddle-hat. Please bow!', { fy: 40 });
+  // ---- seasonal & holiday ----
+  el('fireworks', 'Fireworks', 'star', '#fff3b0', ['sparkles', 'starsAround'], 'star', 'open', 'Pop pop! A sky full of polite little booms.');
+  el('present', 'Present', 'box', '#ff8fa3', ['bow:#ffe27a', 'sparkles'], 'happy', 'open', 'A surprise with a ribbon. Shake it gently!');
+  el('sweater', 'Sweater', 'blob', '#ffb3c7', ['stitch', 'heartsFloat'], 'happy', 'smile', 'Woolly and warm, with sleeves a little too long.');
+  el('paintedegg', 'Painted Egg', 'egg', '#fff6ea', ['speckles:#ff9ec7', 'sparkles'], 'happy', 'smile', 'Dressed up for spring in every happy color.');
+  el('snowangel', 'Snow Angel', 'fluff', '#ffffff', ['wingsSmall:#eaf4ff', 'heartTop'], 'happy', 'smile', 'A soft shape left in the snow by a happy flop.', { blush: '#9ecbff' });
+  // ---- music ----
+  el('music', 'Music', 'star', '#e7d4ff', ['musicNotes', 'sparkles'], 'happy', 'open', 'La la la! A little song that follows you around.');
+  el('flute', 'Flute', 'bean', '#f3e6c8', ['musicNotes'], 'happy', 'blow', 'Toots a breezy tune that makes the flowers sway.', { scale: 0.9 });
+  el('bell', 'Bell', 'round', '#ffe9a8', ['sparkles', 'musicNotes'], 'happy', 'open', 'Ding! A tiny chime with a golden heart.', { scale: 0.84 });
+  el('drum', 'Drum', 'round', '#c9895c', ['speckles:#a86b3c', 'musicNotes'], 'happy', 'open', 'Boom boom! Keeps the beat for dancing friends.');
+  el('harp', 'Harp', 'tri', '#f7e6ff', ['musicNotes', 'rainbowArc'], 'sleepy', 'smile', 'Plucks rainbow strings and hums along.');
+  el('lullaby', 'Lullaby', 'cloud', '#e7f0ff', ['musicNotes', 'nightcap'], 'sleepy', 'smile', 'A whisper-song that tucks everyone in.');
+  // ---- cozy home ----
+  el('paper', 'Paper', 'box', '#fffaf3', ['speckles:#f0e6d8'], 'happy', 'smile', 'A blank page waiting for a drawing of you.');
+  el('book', 'Book', 'box', '#c9b6f2', ['heartTop', 'speckles:#a894e0'], 'happy', 'smile', 'Full of stories that smell like rainy days.');
+  el('candle', 'Candle', 'flame', '#ffe9a0', ['innerFlame', 'glow'], 'sleepy', 'smile', 'A beeswax night-light that smells like flowers.', { scale: 0.9 });
+  el('pillow', 'Pillow', 'squat', '#fff5fb', ['stitch', 'cheeks'], 'sleepy', 'smile', 'The official captain of naps.');
+  el('blanket', 'Blanket', 'squat', '#ffd0e0', ['stitch', 'heartTop'], 'happy', 'smile', 'Pulls itself up to your chin. So snug.');
+  // ---- gems ----
+  el('ruby', 'Ruby', 'gem', '#ff6b8a', ['facets', 'sparkles'], 'star', 'smile', 'A warm red sparkle that feels like a hug.');
+  el('sapphire', 'Sapphire', 'gem', '#7eb6ff', ['facets', 'sparkles'], 'big', 'smile', 'Keeps a tiny piece of ocean inside.');
+  el('emerald', 'Emerald', 'gem', '#3fce7a', ['facets', 'sparkles'], 'happy', 'smile', 'Green as a new leaf and lucky as a clover.');
+  el('gold', 'Gold', 'rock', '#ffd56a', ['metalShine', 'sparkles'], 'big', 'smile', 'Shiny, sunny and a little bit silly-rich.');
+  el('ring', 'Ring', 'round', '#ffd98a', ['heartTop', 'sparkles', 'bigShine'], 'wink', 'smile', 'A tiny promise you can wear. It sparkles when you are kind.', { scale: 0.78 });
+  // ---- new legendaries ----
+  el('dream', 'Dream', 'cloud', '#d7c6ff', ['starsAround', 'halo', 'sparkles', 'nightcap'], 'sleepy', 'smile', 'Where you go when you close your eyes. Anything soft can happen!', { final: true });
+  el('wish', 'Wish', 'star', '#ffe9a8', ['heartTop', 'sparkles', 'halo'], 'star', 'open', 'A wish with a heartbeat. Whisper it to a star.', { final: true, scale: 0.84 });
+  el('harmony', 'Harmony', 'heart', '#ffc2e0', ['musicNotes', 'rainbowArc', 'sparkles', 'halo'], 'happy', 'open', 'Every friend singing the same cozy song.', { final: true });
 
   // ---- recipes: [a, b, result] (order-independent) ----
   const R = [
@@ -223,7 +289,22 @@
     ['milk', 'egg', 'pudding'], ['animal', 'cactus', 'hedgehog'], ['life', 'rain', 'snail'], ['bee', 'lightbulb', 'firefly'],
     ['bear', 'tree', 'koala'], ['fish', 'wave', 'dolphin'], ['jellyfish', 'ocean', 'octopus'], ['rice', 'love', 'mochi'],
     ['animal', 'ocean', 'otter'], ['bird', 'moon', 'bat'], ['animal', 'cloud', 'sheep'], ['rice', 'ocean', 'onigiri'],
-    ['garden', 'moon', 'pumpkin'], ['pumpkin', 'magic', 'witch'], ['cat', 'moon', 'blackcat'], ['animal', 'village', 'tanuki']
+    ['garden', 'moon', 'pumpkin'], ['pumpkin', 'magic', 'witch'], ['cat', 'moon', 'blackcat'], ['animal', 'village', 'tanuki'],
+    ['grass', 'ice', 'frost'], ['rain', 'ice', 'hail'], ['snow', 'wind', 'blizzard'], ['cloud', 'mist', 'fog'],
+    ['sun', 'cloud', 'sunset'], ['sun', 'mist', 'sunrise'], ['comet', 'sky', 'meteor'], ['galaxy', 'mist', 'nebula'],
+    ['metal', 'moon', 'satellite'], ['glass', 'star', 'telescope'], ['moon', 'lightbulb', 'moonlight'],
+    ['flower', 'love', 'rose'], ['flower', 'sun', 'sunflower'], ['flower', 'air', 'daisy'], ['flower', 'lake', 'lily'],
+    ['tree', 'wind', 'leaf'], ['tree', 'snow', 'pine'], ['bread', 'candy', 'cookie'], ['cocoa', 'candy', 'chocolate'],
+    ['apple', 'honey', 'jam'], ['milk', 'hourglass', 'cheese'], ['bread', 'cheese', 'sandwich'], ['pumpkin', 'water', 'soup'],
+    ['mochi', 'candy', 'dango'], ['horse', 'forest', 'deer'], ['animal', 'apple', 'squirrel'], ['bird', 'lake', 'swan'],
+    ['fish', 'flower', 'koi'], ['fish', 'horse', 'seahorse'], ['animal', 'mud', 'pig'], ['bird', 'rainbow', 'parrot'],
+    ['frog', 'human', 'kappa'], ['fire', 'rainbow', 'fireworks'], ['love', 'paper', 'present'], ['sheep', 'love', 'sweater'],
+    ['egg', 'rainbow', 'paintedegg'], ['snow', 'love', 'snowangel'], ['bird', 'wind', 'music'], ['wind', 'bamboo', 'flute'],
+    ['metal', 'wind', 'bell'], ['tree', 'stone', 'drum'], ['music', 'rainbow', 'harp'], ['music', 'baby', 'lullaby'],
+    ['tree', 'water', 'paper'], ['paper', 'human', 'book'], ['campfire', 'honey', 'candle'], ['sheep', 'cloud', 'pillow'],
+    ['sheep', 'house', 'blanket'], ['crystal', 'fire', 'ruby'], ['crystal', 'water', 'sapphire'], ['crystal', 'plant', 'emerald'],
+    ['metal', 'sun', 'gold'], ['gold', 'love', 'ring'], ['moon', 'magic', 'dream'], ['star', 'love', 'wish'],
+    ['music', 'love', 'harmony']
   ];
 
   const byId = {};

@@ -322,6 +322,10 @@
   def('cometTail', o => ({ back: PN('M28 40C14 28 0 26 -8 30C6 34 12 40 16 48C4 46 -6 50 -10 56C4 58 14 62 22 70Z', '#fff3a1', `stroke="#ffd36e" stroke-width="2" stroke-linejoin="round"`) }));
   def('corona', o => ({ back: `<circle cx="50" cy="58" r="40" fill="#ffe8a3" stroke="#ffd36e" stroke-width="2"/>` + A.sunrays(o, '#ffd36e').back }));
   def('crown', o => ({ front: P(`M36 ${o.t + 2}L36 ${o.t - 12}L43 ${o.t - 5}L50 ${o.t - 16}L57 ${o.t - 5}L64 ${o.t - 12}L64 ${o.t + 2}Z`, '#ffd36e', 2) + CN(50, o.t - 3, 2.2, '#ff8fb8') + CN(41, o.t - 1, 1.6, '#9fd0ff') + CN(59, o.t - 1, 1.6, '#9fd0ff') }));
+  def('musicNotes', o => ({ front: S('M76 18V36', '#b48cff', 2.4) + C(72, 38, 4.2, '#d7c6ff', 1.4) + S('M76 18C86 16 90 24 84 28', '#b48cff', 2.2) + S('M18 28V42', '#b48cff', 2.2) + C(14, 44, 3.6, '#ffd6ee', 1.3) }));
+  def('antlers', o => ({ back: S(`M34 ${o.t + 10}C28 ${o.t - 4} 20 ${o.t - 6} 18 ${o.t - 16}`, '#c9956a', 2.8) + S(`M30 ${o.t}C22 ${o.t - 8} 16 ${o.t - 4} 14 ${o.t - 12}`, '#c9956a', 2.2) + S(`M66 ${o.t + 10}C72 ${o.t - 4} 80 ${o.t - 6} 82 ${o.t - 16}`, '#c9956a', 2.8) + S(`M70 ${o.t}C78 ${o.t - 8} 84 ${o.t - 4} 86 ${o.t - 12}`, '#c9956a', 2.2) }));
+  def('kappaDish', o => ({ front: E(50, o.t + 4, 18, 5.2, '#9fdcff', 0, 1.6) + S(`M36 ${o.t + 4}Q50 ${o.t} 64 ${o.t + 4}`, '#fff', 1.8, 'opacity=".9"') }));
+  def('leafVein', o => ({ pat: S('M50 24V88', '#3f8f4a', 2.2) + S('M50 46L32 36M50 60L68 50M50 74L34 68', '#3f8f4a', 1.8) }));
 
   // ---------- faces ----------
   function eyesSVG(type, ring, es) {

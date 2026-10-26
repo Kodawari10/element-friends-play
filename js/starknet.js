@@ -337,7 +337,24 @@
   async function ensureConnected() { if (wallet && address) return true; openPicker(); return false; }
 
   // ---------- sync ----------
-  let fpMismatch = false;
+  // The published Sepolia contract still holds the original table. Newer friends stay
+  // "minting coming soon" until that contract's fingerprint matches this build (owner append,
+  // or a fresh deploy). A fingerprint match means every current friend can be minted.
+  const LIVE = C.live || {};
+  const LIVE_COUNT = LIVE.elementCount | 0;
+  const LIVE_FP = LIVE.fingerprint || '';
+  let fpMismatch = false, chainCount = 0, chainFp = null;
+  const localFp = () => { try { return BigInt(window.EF_CHAIN_IDS.fingerprint); } catch (e) { return null; } };
+  function canMint(id) {
+    const n = IDS[id] || 0;
+    if (!n || !D.byId[id]) return false;
+    if (chainFp != null && !fpMismatch) return true;
+    const cap = chainCount > 0 ? chainCount : LIVE_COUNT;
+    if (!cap) return true;
+    try { if (chainFp == null && LIVE_FP && localFp() === BigInt(LIVE_FP)) return true; } catch (e) { /* ignore */ }
+    const safe = (LIVE_COUNT && (chainFp == null || fpMismatch)) ? Math.min(cap, LIVE_COUNT) : cap;
+    return n <= safe;
+  }
   async function sync(loud) {
     if (!configured || !address) return;
     try {
@@ -348,7 +365,8 @@
       const added = G.importDiscoveries(list);
       if (added) G.ui.toast(`✦ Synced ${added} friend${added > 1 ? 's' : ''} from Starknet!`);
       else if (loud && list.length) G.ui.toast(`✦ ${list.length} friends are on Starknet`);
-      try { fpMismatch = BigInt((await call('table_fingerprint'))[0]) !== BigInt(window.EF_CHAIN_IDS.fingerprint); } catch (e) { /* older deploy */ }
+      try { chainFp = BigInt((await call('table_fingerprint'))[0]); fpMismatch = chainFp !== localFp(); } catch (e) { /* older deploy */ }
+      try { const c = parseInt((await call('element_count'))[0], 16); if (c > 0) chainCount = c; } catch (e) { /* older deploy */ }
       decorate();
     } catch (e) { if (loud) G.ui.toast('Could not reach Starknet right now. Try again later.'); }
   }
@@ -356,11 +374,11 @@
   // ---------- planning ----------
   function plan(targets) {
     const local = G.found, have = new Set(minted), steps = [];
-    D.elements.filter(e => e.base && local.has(e.id) && !have.has(e.id)).forEach(e => { have.add(e.id); steps.push({ id: e.id, a: null, b: null }); });
+    D.elements.filter(e => e.base && local.has(e.id) && !have.has(e.id) && canMint(e.id)).forEach(e => { have.add(e.id); steps.push({ id: e.id, a: null, b: null }); });
     const parent = {}; let grew = true;
     while (grew) {
       grew = false;
-      for (const [a, b, r] of D.recipes) if (have.has(a) && have.has(b) && !have.has(r) && local.has(r)) { have.add(r); parent[r] = [a, b]; steps.push({ id: r, a, b }); grew = true; }
+      for (const [a, b, r] of D.recipes) if (have.has(a) && have.has(b) && !have.has(r) && local.has(r) && canMint(r)) { have.add(r); parent[r] = [a, b]; steps.push({ id: r, a, b }); grew = true; }
     }
     const need = new Set();
     const want = id => { if (need.has(id) || minted.has(id)) return; need.add(id); if (parent[id]) { want(parent[id][0]); want(parent[id][1]); } };
@@ -451,10 +469,13 @@
     if (busy) return;
     if (!(await ensureConnected())) return;
     if (!chainOk) { G.ui.toast(`Please switch your wallet to ${C.networkName} first`); return; }
-    const steps = plan(targets);
-    const stuck = targets.filter(t => !minted.has(t) && !steps.some(s => s.id === t));
+    const ready = targets.filter(t => canMint(t));
+    const soon = targets.filter(t => !minted.has(t) && !canMint(t));
+    const steps = plan(ready);
+    const stuck = ready.filter(t => !minted.has(t) && !steps.some(s => s.id === t));
     if (!steps.length) {
-      if (stuck.length) G.ui.toast(`${D.byId[stuck[0]].name} needs friends you haven't found in this game yet ♡`);
+      if (soon.length && !stuck.length) G.ui.toast(`${D.byId[soon[0]].name} is safe in your collection ♡ Minting coming soon`);
+      else if (stuck.length) G.ui.toast(`${D.byId[stuck[0]].name} needs friends you haven't found in this game yet ♡`);
       else G.ui.toast('Already on Starknet ✦');
       decorate(); return;
     }
@@ -524,6 +545,7 @@
     const body = $('#chainBody');
     const localN = G.found.size, onN = minted.size, legend = [...minted].filter(id => D.byId[id].final).length;
     const toMint = plan([...G.found]).length;
+    const soonN = [...G.found].filter(id => !minted.has(id) && !canMint(id)).length;
     const via = walletKind === 'cartridge' ? ' · via Cartridge' : '';
     const feeNote = walletKind === 'cartridge'
       ? (feeFallbackUsed ? '<div class="chain-note">Fees: your wallet pays (sponsorship unavailable).</div>'
@@ -538,7 +560,8 @@
       <div class="net-pill ${chainOk ? '' : 'bad'}">${chainOk ? '●' : '▲'} ${esc(C.networkName)}${via}${chainOk ? '' : ': please switch network in your wallet'}</div>
       <p class="addr" title="${esc(address || '')}">${esc(short(address))} <button class="btn mini" id="copyAddr" aria-label="Copy address">copy</button></p>
       ${configured ? '' : `<div class="chain-note">The Element Friends contract isn't deployed yet, so minting is off. Your friends are safe on this device. (Deploy steps are in <code>contracts/README.md</code>.)</div>`}
-      ${fpMismatch ? `<div class="chain-note">Heads up: this game version has newer recipes than the deployed contract.</div>` : ''}
+      ${fpMismatch ? `<div class="chain-note">Heads up: this game version has newer recipes than the deployed contract. Friends already on the contract can still be minted.</div>` : ''}
+      ${soonN ? `<div class="chain-note" id="mintSoon">✦ Minting coming soon for ${soonN} newer friend${soonN > 1 ? 's' : ''}. You can still collect them here.</div>` : ''}
       ${feeNote}
       ${fuelNote}
       <div class="chain-stats">
@@ -574,12 +597,20 @@
   }
 
   let revealId = null;
-  document.addEventListener('ef:reveal', ev => {
-    revealId = ev.detail.id; const b = $('#revealMint'); $('#revealMintStatus').textContent = '';
-    b.hidden = minted.has(revealId);
-    b.disabled = false; b.textContent = address ? '✦ Mint on Starknet' : '✦ Mint on Starknet (connect)';
+  function paintRevealMint() {
+    const b = $('#revealMint'); if (!b || !revealId) return;
+    if (minted.has(revealId)) { b.hidden = true; return; }
+    b.hidden = false;
+    if (!canMint(revealId)) { b.disabled = true; b.classList.add('soon'); b.textContent = '✦ Minting coming soon'; }
+    else { b.disabled = false; b.classList.remove('soon'); b.textContent = address ? '✦ Mint on Starknet' : '✦ Mint on Starknet (connect)'; }
+  }
+  document.addEventListener('ef:reveal', ev => { revealId = ev.detail.id; const st = $('#revealMintStatus'); if (st) st.textContent = ''; paintRevealMint(); });
+  $('#revealMint').addEventListener('click', async () => {
+    if (revealId && !canMint(revealId)) { G.ui.toast(`${D.byId[revealId].name} is safe in your collection ♡ Minting coming soon`); return; }
+    if (!address) { openPicker(); return; }
+    await mint([revealId], $('#revealMintStatus'));
+    if (minted.has(revealId)) $('#revealMint').hidden = true;
   });
-  $('#revealMint').addEventListener('click', async () => { if (!address) { openPicker(); return; } await mint([revealId], $('#revealMintStatus')); if (minted.has(revealId)) $('#revealMint').hidden = true; });
 
   function decorate() {
     pushChain();
@@ -593,13 +624,17 @@
     const sub = $('#bookSub');
     if (sub && address) { let s = sub.querySelector('.chain-sub'); if (!s) { s = document.createElement('span'); s.className = 'chain-sub'; sub.appendChild(s); } s.textContent = ` · ✦ ${minted.size} on Starknet`; }
     if (!$('#detail').hidden && detailId) renderDetail(detailId);
-    if (!$('#reveal').hidden && revealId && minted.has(revealId)) $('#revealMint').hidden = true;
+    if (!$('#reveal').hidden && revealId) paintRevealMint();
   }
   document.addEventListener('ef:book', () => { decorate(); if (address && configured) sync(); });
   let detailId = null;
   function renderDetail(id) {
     const box = $('#detailChain'); detailId = id;
     const wf = configured && address && !D.byId[id].base ? '<p class="world-first" id="detailFirst"></p>' : '';
+    if (!minted.has(id) && !canMint(id)) {
+      box.innerHTML = `<div class="chain-chip soon" id="mintSoonChip">✦ Minting coming soon</div><p class="mint-status">This friend is not on the Starknet contract yet. You can still keep them here ♡</p>`;
+      return;
+    }
     if (minted.has(id)) box.innerHTML = `<div class="chain-chip">✦ Minted on Starknet${D.byId[id].final ? ' · Legendary badge ★' : ''}</div>${wf}`;
     else {
       box.innerHTML = `<button class="btn chain" id="detailMint">✦ Mint on Starknet</button><p class="mint-status" id="detailStatus" role="status" aria-live="polite"></p>${wf}`;
@@ -653,7 +688,7 @@
   }
   if (window.EF_GAME) init(); else document.addEventListener('ef:ready', init, { once: true });
   window.EF_STARKNET = {
-    plan: t => plan(t), calldataFor,
+    plan: t => plan(t), canMint, calldataFor,
     get address() { return address; },
     get walletKind() { return walletKind; },
     minted, sync, config: C, configured, firstOf, tokenOf, get worldFirsts() { return worldFirsts; },
