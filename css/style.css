@@ -1419,3 +1419,20 @@ html.calm .rank-fill { transition: none; }
 html[data-theme="night"] .stats-rank { background: linear-gradient(120deg, #43294f, #2a3352); box-shadow: inset 0 0 0 2px #6b4a7e; }
 html[data-theme="night"] .rank-track { fill: #2c2440; stroke: #4a3b6e; }
 html[data-theme="night"] .rank-k { color: #ff9cc6; }
+
+/* 🆕 New friends: Collection chip, NEW tag, and new-friend hints */
+.filter-chip.new-chip { color: #d0487f; }
+.filter-chip.new-chip.active, .filter-chip.new-chip[aria-checked="true"] { background: linear-gradient(140deg, #ffd9ea, #ffeccf); color: #b0306a; box-shadow: 0 3px 0 #f3bcd4, inset 0 0 0 2px #ffb3d1; }
+.filter-chip.new-chip.active .n { background: #ff6fa5; color: #fff; }
+.book-cell .new-tag { position: absolute; left: 5px; top: 19px; font-size: 8px; font-weight: 900; letter-spacing: .04em; line-height: 1; padding: 2px 5px; border-radius: 8px; background: #ff6fa5; color: #fff; pointer-events: none; box-shadow: 0 1px 2px rgba(176, 48, 106, .3); }
+.book-cell.locked .new-tag { background: #ffc2da; color: #a23a6a; }
+.hintcard.new-hint { border-color: #ff9cc4; flex-wrap: wrap; justify-content: center; }
+.hintcard .new-hint-tag { flex-basis: 100%; text-align: center; font-size: 12px; color: #d0487f; animation: newHintPop 1.6s ease-in-out infinite; }
+@keyframes newHintPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+html.calm .hintcard .new-hint-tag { animation: none; }
+@media (prefers-reduced-motion: reduce) { .hintcard .new-hint-tag { animation: none; } }
+html[data-theme="night"] .filter-chip.new-chip { color: #ffb3d1; }
+html[data-theme="night"] .filter-chip.new-chip.active, html[data-theme="night"] .filter-chip.new-chip[aria-checked="true"] { background: linear-gradient(140deg, #7a3a66, #6a4a3f); color: #fff; box-shadow: 0 3px 0 #2a1424, inset 0 0 0 2px #ff8fbf; }
+html[data-theme="night"] .book-cell.locked .new-tag { background: #6a3a5c; color: #ffd0e4; }
+html[data-theme="night"] .hintcard.new-hint { border-color: #c45a8c; }
+html[data-theme="night"] .hintcard .new-hint-tag { color: #ffb3d1; }

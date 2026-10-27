@@ -690,11 +690,11 @@
       const known = found.has(e.id), near = !known && reach.has(e.id);
       const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'listitem');
       const fav = known && isFave(e.id), shn = known && state.shinies.includes(e.id);
-      b.className = 'book-cell' + (known ? '' : ' locked') + (near ? ' reach' : '') + (e.final ? ' final' : '') + (fav ? ' fave' : '') + (shn ? ' shiny-seen' : '');
+      b.className = 'book-cell' + (known ? '' : ' locked') + (near ? ' reach' : '') + (e.final ? ' final' : '') + (fav ? ' fave' : '') + (shn ? ' shiny-seen' : '') + (NEW_IDS.has(e.id) ? ' newbie' : '');
       b.dataset.id = e.id;
-      b.setAttribute('aria-label', known ? `${e.name}${e.final ? ', legendary' : ''}${fav ? ', best friend' : ''}${shn ? ', met a shiny one' : ''}. Show details` : near ? 'Undiscovered friend, within reach: you already have both friends needed to make it' : 'Undiscovered friend');
+      b.setAttribute('aria-label', known ? `${e.name}${NEW_IDS.has(e.id) ? ', new friend' : ''}${e.final ? ', legendary' : ''}${fav ? ', best friend' : ''}${shn ? ', met a shiny one' : ''}. Show details` : near ? 'Undiscovered friend, within reach: you already have both friends needed to make it' : 'Undiscovered friend');
       if (near) b.title = 'Within reach! You already have both friends you need 🌱';
-      b.innerHTML = `<span class="num">${i + 1}</span>` + (fav ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '') + (shn ? '<span class="shiny-dot" aria-hidden="true">✨</span>' : '') + (near ? '<span class="reach-dot" aria-hidden="true">🌱</span>' : '') + `<div class="art">${ART.render(e, { label: false })}</div><span class="lbl">${known ? e.name : '???'}</span>`;
+      b.innerHTML = `<span class="num">${i + 1}</span>` + (fav ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '') + (shn ? '<span class="shiny-dot" aria-hidden="true">✨</span>' : '') + (near ? '<span class="reach-dot" aria-hidden="true">🌱</span>' : '') + (NEW_IDS.has(e.id) ? '<span class="new-tag" aria-hidden="true">NEW</span>' : '') + `<div class="art">${ART.render(e, { label: false })}</div><span class="lbl">${known ? e.name : '???'}</span>`;
       if (known) b.addEventListener('click', () => openDetail(e.id));
       else if (near) b.addEventListener('click', () => { SND.play('select'); const m = 'Within reach! 🌱 You already have both friends you need for this one. Keep mixing, or try a 💡 Hint.'; toast(m, 3200); announce(m); });
       else b.tabIndex = -1;
@@ -705,8 +705,10 @@
     $('#bookBar').style.width = (found.size / TOTAL * 100) + '%';
     renderStars();
     $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★` + (reach.size ? ` · 🌱 ${reach.size} within reach` : '');
-    const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length, chain: chainFriends().length };
+    const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length, chain: chainFriends().length, new: `${[...NEW_IDS].filter(id => found.has(id)).length}/${NEW_IDS.size}` };
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { c.querySelector('.n').textContent = counts[c.dataset.filter]; });
+    const newChip = document.querySelector('#bookFilter [data-filter="new"]');
+    if (newChip) newChip.setAttribute('aria-label', `New friends, ${[...NEW_IDS].filter(id => found.has(id)).length} of ${NEW_IDS.size} found`);
     // the ✨ Shiny chip only shows up once you've met a shiny friend
     const shinyChip = document.querySelector('#bookFilter [data-filter="shiny"]'); if (shinyChip) shinyChip.hidden = !counts.shiny;
     if (bookFilter === 'shiny' && !counts.shiny) bookFilter = 'all';
@@ -724,6 +726,10 @@
     D.recipes.forEach(([a, b, r]) => { if (!found.has(r) && found.has(a) && found.has(b)) out.add(r); });
     return out;
   }
+  // 🆕 New friends: the 56 friends added on 2026-10-26 (data positions 161–216, the ones not on the live Sepolia contract yet).
+  const ORIGINAL_COUNT = 160;
+  const NEW_IDS = new Set(D.elements.slice(ORIGINAL_COUNT).map(e => e.id));
+  const isNewFriend = id => NEW_IDS.has(id);
   // Collection filter chips (session only, nothing saved).
   let bookFilter = 'all';
   // 🔍 Find a friend: Collection search over found friends only (name, nickname, Japanese kana/romaji/kanji). Never saved.
@@ -757,7 +763,7 @@
     if ($('#book').hidden) { if (!n && bookFilter === 'chain') bookFilter = 'all'; return; }
     if (bookFilter === 'chain') applyBookFilter(n ? 'chain' : 'all', !n);
   }
-  const FILTER_NAMES = { all: 'all friends', found: 'found friends', missing: 'missing friends', legendary: 'legendary friends', faves: 'best friends', shiny: 'shiny friends', chain: 'friends minted on Starknet' };
+  const FILTER_NAMES = { all: 'all friends', found: 'found friends', missing: 'missing friends', legendary: 'legendary friends', faves: 'best friends', shiny: 'shiny friends', chain: 'friends minted on Starknet', new: 'new friends' };
   const FILTER_EMPTY = { found: 'No friends yet. Mix two friends to meet someone new! ✨', missing: 'You found everyone! Every friend is home 💖', legendary: '', faves: 'No best friends yet. Open a friend and tap the 🤍 heart to make them a bestie!', shiny: 'No shiny friends yet. Keep mixing: now and then a friend comes out sparkly! ✨', chain: 'Nothing minted yet. Open a friend and tap ✦ Mint on Starknet to keep them forever!' };
   function applyBookFilter(mode, speak) {
     if (!FILTER_NAMES[mode]) mode = 'all';
@@ -765,7 +771,7 @@
     let shown = 0;
     $('#bookGrid').querySelectorAll('.book-cell').forEach(c => {
       const locked = c.classList.contains('locked'), fin = c.classList.contains('final');
-      const vis = bookMatches(c.dataset.id) && (mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen')) || (mode === 'chain' && !locked && chainSet.has(c.dataset.id)));
+      const vis = bookMatches(c.dataset.id) && (mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen')) || (mode === 'chain' && !locked && chainSet.has(c.dataset.id)) || (mode === 'new' && NEW_IDS.has(c.dataset.id)));
       c.hidden = !vis; if (vis) shown++;
     });
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { const on = c.dataset.filter === mode; c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); c.tabIndex = on ? 0 : -1; });
@@ -795,7 +801,7 @@
   $('#bookFilter').addEventListener('animationend', ev => ev.target.classList.remove('pop'));
   // ---------- flip through friends (detail view) ----------
   function flipList(id) {
-    let list = D.elements.filter(e => found.has(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id)) && (bookFilter !== 'shiny' || state.shinies.includes(e.id)) && (bookFilter !== 'chain' || chainSet.has(e.id))).map(e => e.id);
+    let list = D.elements.filter(e => found.has(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id)) && (bookFilter !== 'shiny' || state.shinies.includes(e.id)) && (bookFilter !== 'chain' || chainSet.has(e.id)) && (bookFilter !== 'new' || NEW_IDS.has(e.id))).map(e => e.id);
     if (!list.includes(id)) list = D.elements.filter(e => found.has(e.id)).map(e => e.id);
     return list;
   }
@@ -829,7 +835,7 @@
   function surpriseFriend(rand) {
     const r = typeof rand === 'function' ? rand : Math.random;
     const all = D.elements.filter(e => found.has(e.id)).map(e => e.id);
-    const filtered = all.filter(id => (bookFilter !== 'legendary' || D.byId[id].final) && (bookFilter !== 'faves' || isFave(id)) && (bookFilter !== 'shiny' || state.shinies.includes(id)) && (bookFilter !== 'chain' || chainSet.has(id)));
+    const filtered = all.filter(id => (bookFilter !== 'legendary' || D.byId[id].final) && (bookFilter !== 'faves' || isFave(id)) && (bookFilter !== 'shiny' || state.shinies.includes(id)) && (bookFilter !== 'chain' || chainSet.has(id)) && (bookFilter !== 'new' || NEW_IDS.has(id)));
     const list = filtered.length ? filtered : all;
     if (!list.length) return null;
     const cur = !$('#detail').hidden ? $('#detailArt').dataset.id : '';
@@ -1226,13 +1232,18 @@
     if (left > 0) { toast(`Hint is recharging… ${Math.ceil(left / 1000)}s ⏳`); return; }
     const cands = D.recipes.filter(([a, b, r]) => found.has(a) && found.has(b) && !found.has(r));
     if (!cands.length) { toast('You found every friend! 🎉'); return; }
-    const [a, b] = cands[Math.floor(Math.random() * cands.length)];
+    // 🆕 hints lean towards the 56 new friends while one of them is within reach, so they're easier to discover
+    const fresh = cands.filter(([, , r]) => NEW_IDS.has(r)), pool = fresh.length ? fresh : cands;
+    const [a, b, r] = pool[Math.floor(Math.random() * pool.length)];
+    const isNew = NEW_IDS.has(r);
     const hc = $('#hintcard');
-    hc.innerHTML = `<span>Try:</span><div class="mini">${ART.render(D.byId[a])}</div><span class="plus">+</span><div class="mini">${ART.render(D.byId[b])}</div><span class="plus">=</span><div class="q">?</div>`;
-    hc.setAttribute('aria-label', `Hint: try mixing ${D.byId[a].name} and ${D.byId[b].name}`);
+    hc.classList.toggle('new-hint', isNew);
+    hc.innerHTML = (isNew ? '<span class="new-hint-tag">🆕 New friend!</span>' : '') + `<span>Try:</span><div class="mini">${ART.render(D.byId[a])}</div><span class="plus">+</span><div class="mini">${ART.render(D.byId[b])}</div><span class="plus">=</span><div class="q">?</div>`;
+    hc.setAttribute('aria-label', `Hint: try mixing ${D.byId[a].name} and ${D.byId[b].name}${isNew ? ' to meet a brand-new friend' : ''}`);
     hc.hidden = false; clearTimeout(hc._t); hc._t = setTimeout(() => { hc.hidden = true; }, 7000);
     hc.onclick = () => { hc.hidden = true; };
-    announce(`Hint: try mixing ${D.byId[a].name} and ${D.byId[b].name}`);
+    announce(`Hint: try mixing ${D.byId[a].name} and ${D.byId[b].name}${isNew ? ' to meet a brand-new friend' : ''}`);
+    document.dispatchEvent(new CustomEvent('ef:hint', { detail: { a, b, isNew } }));
     document.querySelectorAll('.inv-item.hinted').forEach(x => x.classList.remove('hinted'));
     [a, b].forEach(id => { const el = inv.querySelector(`[data-id="${id}"]`); if (el) { el.classList.add('hinted'); el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); setTimeout(() => el.classList.remove('hinted'), 8000); } });
     state.hintAt = Date.now() + HINT_COOLDOWN; save(); SND.play('hint'); tickHint();
@@ -1742,7 +1753,7 @@
 
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, searchBook: q => searchBook(q || '', false), bookQuery: () => bookQuery, setChainFriends, chainFriends,
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, searchBook: q => searchBook(q || '', false), bookQuery: () => bookQuery, setChainFriends, chainFriends, isNewFriend, newFriendIds: () => [...NEW_IDS],
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }
