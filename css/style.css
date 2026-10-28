@@ -1436,3 +1436,19 @@ html[data-theme="night"] .filter-chip.new-chip.active, html[data-theme="night"] 
 html[data-theme="night"] .book-cell.locked .new-tag { background: #6a3a5c; color: #ffd0e4; }
 html[data-theme="night"] .hintcard.new-hint { border-color: #c45a8c; }
 html[data-theme="night"] .hintcard .new-hint-tag { color: #ffb3d1; }
+
+/* 🗓️ Met today (My stats) */
+.stats-recent { margin: 12px 0 4px; padding: 10px 12px; border-radius: 20px; background: linear-gradient(120deg, #eef7ff, #fdeefe); box-shadow: inset 0 0 0 2px #cfe6ff; }
+.stats-recent-k { margin: 0 0 8px; font-weight: 800; font-size: 14px; color: #5a6fb0; }
+.stats-recent-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
+.stats-recent-btn { width: 100%; min-height: 72px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 2px; border: 0; border-radius: 14px; background: #fff; box-shadow: 0 2px 0 #e3d6ef; cursor: pointer; font: inherit; color: var(--ink); }
+.stats-recent-btn:hover { filter: brightness(1.03); }
+.stats-recent-btn:focus-visible { outline: 3px solid #ff6fa5; outline-offset: 2px; }
+.stats-recent-art { width: 44px; height: 44px; display: block; }
+.stats-recent-art svg { width: 100%; height: 100%; }
+.stats-recent-n { font-size: 10px; font-weight: 800; line-height: 1.1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stats-recent-more { display: grid; place-items: center; min-height: 72px; border-radius: 14px; background: #f3e4f4; color: #9a6fae; font-weight: 900; }
+html[data-theme="night"] .stats-recent { background: linear-gradient(120deg, #2a2f52, #3a2a4f); box-shadow: inset 0 0 0 2px #4a5a8a; }
+html[data-theme="night"] .stats-recent-k { color: #b9c8ff; }
+html[data-theme="night"] .stats-recent-btn { background: #3d2f5c; box-shadow: 0 2px 0 #1f1733; color: #f3e9ff; }
+html[data-theme="night"] .stats-recent-more { background: #3d2f5c; color: #d0bfff; }

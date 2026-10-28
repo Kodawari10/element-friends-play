@@ -106,6 +106,7 @@
         `<span class="stats-top-txt"><span class="stats-top-k">🥇 Most made friend</span><span class="stats-top-n">${esc(who)}</span><span class="stats-top-c">made ${plural(s.topCount, 'time', 'times')}</span></span></button>`;
     } else { fav.hidden = true; fav.innerHTML = ''; }
 
+    renderRecent(today);
     const since = document.getElementById('statsSince');
     if (s.since) {
       const d = today ? daysBetween(s.since, today) : 0;
@@ -113,6 +114,32 @@
     } else since.textContent = '📅 Your adventure starts with your very first mix!';
     document.getElementById('statsSub').textContent = s.found >= s.total ? 'Everyone is here! You found every single friend 🎉' : `You've found ${pct}% of all friends. Keep mixing! 💕`;
     return s;
+  }
+
+  // 🗓️ Met today: the friends you met on your latest play day (today, or the last day you found someone)
+  const RECENT_MAX = 12;
+  function recentDay(today) {
+    const st = G.state || {}, met = st.met && typeof st.met === 'object' ? st.met : {};
+    const ids = Object.keys(met).filter(id => D.byId[id] && !D.byId[id].base && G.found.has(id) && /^\d{4}-\d{2}-\d{2}$/.test(met[id]));
+    if (!ids.length) return { day: '', ids: [] };
+    const day = ids.map(id => met[id]).sort().pop();
+    // newest first: the save's found list is in discovery order
+    const order = Array.isArray(st.found) ? st.found : [];
+    const list = ids.filter(id => met[id] === day).sort((a, b) => order.lastIndexOf(b) - order.lastIndexOf(a));
+    return { day, ids: list, today: day === today };
+  }
+  function renderRecent(today) {
+    const box = document.getElementById('statsRecent'); if (!box) return null;
+    const r = recentDay(today);
+    if (!r.ids.length) { box.hidden = true; box.innerHTML = ''; return r; }
+    const shown = r.ids.slice(0, RECENT_MAX), more = r.ids.length - shown.length;
+    const head = r.today ? `🗓️ Met today · ${plural(r.ids.length, 'friend', 'friends')}` : `🗓️ Last time (${fmtDay(r.day)}) you met ${plural(r.ids.length, 'friend', 'friends')}`;
+    box.hidden = false;
+    box.innerHTML = `<p class="stats-recent-k" id="statsRecentHead">${esc(head)}</p><ul class="stats-recent-list" aria-labelledby="statsRecentHead">` +
+      shown.map(id => { const e = D.byId[id], nick = G.nickOf ? G.nickOf(id) : '', who = nick ? `${nick} the ${e.name}` : e.name;
+        return `<li><button type="button" class="stats-recent-btn" data-open="${esc(id)}" aria-label="${esc(who)}. Open their card"><span class="stats-recent-art" aria-hidden="true">${ART.render(e)}</span><span class="stats-recent-n">${esc(nick || e.name)}</span></button></li>`; }).join('') +
+      (more > 0 ? `<li class="stats-recent-more" aria-label="and ${more} more">+${more}</li>` : '') + '</ul>';
+    return r;
   }
 
   function openStats() {
@@ -126,6 +153,11 @@
   function init() {
     G = window.EF_GAME;
     const btn = document.getElementById('btnStats'); if (btn) btn.addEventListener('click', openStats);
+    const rec = document.getElementById('statsRecent');
+    if (rec) rec.addEventListener('click', ev => {
+      const b = ev.target.closest('[data-open]'); if (!b || !G.found.has(b.dataset.open)) return;
+      G.openDetail(b.dataset.open);
+    });
     document.getElementById('statsTop').addEventListener('click', ev => {
       const b = ev.target.closest('[data-open]'); if (!b || !G.found.has(b.dataset.open)) return;
       G.openDetail(b.dataset.open);
@@ -142,7 +174,7 @@
       setTimeout(() => G.ui.announce(`Rank up! You're now a ${now.name}.`), 900);
       document.dispatchEvent(new CustomEvent('ef:rankup', { detail: { index: now.index, name: now.name, found: n } }));
     });
-    window.EF_STATS = { open: openStats, snapshot: () => snapshot(), render, rank: (f, t) => rankOf(f, t) };
+    window.EF_STATS = { open: openStats, snapshot: () => snapshot(), render, rank: (f, t) => rankOf(f, t), recent: () => recentDay(G.todayKey ? G.todayKey() : '') };
   }
   if (window.EF_GAME) init(); else document.addEventListener('ef:ready', init, { once: true });
 })();

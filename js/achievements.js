@@ -28,7 +28,9 @@
     { id: 'combo_star', name: 'Combo Star', emoji: '🌠', blurb: 'Find 3 new friends in a row for a combo.', when: s => s.bestCombo >= 3 },
     { id: 'konnichiwa', name: 'Konnichiwa!', emoji: '🗾', blurb: 'Hear a friend’s name in Japanese.', when: s => s.jpHeard >= 1 },
     { id: 'little_listener', name: 'Little Listener', emoji: '🎧', blurb: 'Hear 20 friends’ names in Japanese.', when: s => s.jpHeard >= 20 },
-    { id: 'kana_star', name: 'Kana Star', emoji: '💮', blurb: 'Get a perfect 5/5 in the Name quiz.', when: s => s.jpBest >= 5 }
+    { id: 'kana_star', name: 'Kana Star', emoji: '💮', blurb: 'Get a perfect 5/5 in the Name quiz.', when: s => s.jpBest >= 5 },
+    { id: 'new_neighbours', name: 'New Neighbours', emoji: '🏡', blurb: 'Meet 10 of the 56 newest friends.', when: s => s.newCount >= 10 },
+    { id: 'welcome_committee', name: 'Welcome Committee', emoji: '🎀', blurb: 'Meet all 56 of the newest friends.', when: s => s.newTotal > 0 && s.newCount >= s.newTotal }
   ];
 
   function loadStore() {
@@ -58,6 +60,8 @@
     } catch (e) { return { heard: 0, best: 0 }; }
   }
 
+  // the 56 friends added on 2026-10-26 (game.js knows which ones)
+  const newIds = () => (G && typeof G.newFriendIds === 'function' ? G.newFriendIds() : []);
   function snap() {
     const jp = jpStats();
     const legends = D.elements.filter(e => e.final);
@@ -77,7 +81,9 @@
       faves: st && Array.isArray(st.faves) ? st.faves.length : 0,
       bestCombo: st ? (st.bestCombo | 0) : 0,
       jpHeard: jp.heard,
-      jpBest: jp.best
+      jpBest: jp.best,
+      newCount: newIds().filter(id => G.found.has(id)).length,
+      newTotal: newIds().length
     };
   }
 
