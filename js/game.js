@@ -119,8 +119,30 @@
     if (diff <= 0) return { icon: '🎉', text: 'Met today!' };
     if (diff === 1) return { icon: '🌙', text: 'Met yesterday' };
     const opts = { month: 'short', day: 'numeric' }; if (y !== now.getFullYear()) opts.year = 'numeric';
-    return { icon: '📅', text: 'Friends since ' + day.toLocaleDateString('en-US', opts) };
+    const since = 'Friends since ' + day.toLocaleDateString('en-US', opts);
+    const fv = friendversary(id, now);
+    if (fv) return { icon: '🎂', text: `Happy ${fv.label} friendversary! ${since}`, short: since, party: fv };
+    return { icon: '📅', text: since };
   }
+  // 🎂 Friendversary: the day a friend has been yours for 1, 2 or 3 weeks, a whole number of months, or years.
+  function friendversary(id, now = new Date()) {
+    const e = D.byId[id], k = state.met && state.met[id];
+    if (!e || e.base || !k || !found.has(id)) return null;
+    const [y, m, d] = k.split('-').map(Number), day = new Date(y, m - 1, d);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const diff = Math.round((today - day) / 864e5);
+    if (diff <= 0) return null;
+    if (diff % 7 === 0 && diff <= 21) { const w = diff / 7; return { kind: 'week', n: w, label: `${w}-week` }; }
+    const months = (today.getFullYear() - y) * 12 + (today.getMonth() - (m - 1));
+    if (months < 1) return null;
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    // met on the 31st? Then shorter months celebrate on their last day.
+    const sameDay = today.getDate() === d || (d > lastDay && today.getDate() === lastDay);
+    if (!sameDay) return null;
+    if (months % 12 === 0) { const yrs = months / 12; return { kind: 'year', n: yrs, label: `${yrs}-year` }; }
+    return { kind: 'month', n: months, label: `${months}-month` };
+  }
+  function friendversaries(now) { return D.elements.filter(e => friendversary(e.id, now)).map(e => e.id); }
   // ---------- times made 🧪 (local only: how often you've mixed each friend) ----------
   const MADE_MAX = 99999, MADE_CHEERS = [10, 25, 50, 100, 250, 500, 1000];
   const madeCount = id => (state && state.made && state.made[id]) || 0;
@@ -689,12 +711,12 @@
     D.elements.forEach((e, i) => {
       const known = found.has(e.id), near = !known && reach.has(e.id);
       const b = document.createElement('button'); b.type = 'button'; b.setAttribute('role', 'listitem');
-      const fav = known && isFave(e.id), shn = known && state.shinies.includes(e.id);
-      b.className = 'book-cell' + (known ? '' : ' locked') + (near ? ' reach' : '') + (e.final ? ' final' : '') + (fav ? ' fave' : '') + (shn ? ' shiny-seen' : '') + (NEW_IDS.has(e.id) ? ' newbie' : '');
+      const fav = known && isFave(e.id), shn = known && state.shinies.includes(e.id), cake = known && !!friendversary(e.id);
+      b.className = 'book-cell' + (known ? '' : ' locked') + (near ? ' reach' : '') + (e.final ? ' final' : '') + (fav ? ' fave' : '') + (shn ? ' shiny-seen' : '') + (NEW_IDS.has(e.id) ? ' newbie' : '') + (cake ? ' party' : '');
       b.dataset.id = e.id;
-      b.setAttribute('aria-label', known ? `${e.name}${NEW_IDS.has(e.id) ? ', new friend' : ''}${e.final ? ', legendary' : ''}${fav ? ', best friend' : ''}${shn ? ', met a shiny one' : ''}. Show details` : near ? 'Undiscovered friend, within reach: you already have both friends needed to make it' : 'Undiscovered friend');
+      b.setAttribute('aria-label', known ? `${e.name}${NEW_IDS.has(e.id) ? ', new friend' : ''}${e.final ? ', legendary' : ''}${fav ? ', best friend' : ''}${shn ? ', met a shiny one' : ''}${cake ? ', friendversary today' : ''}. Show details` : near ? 'Undiscovered friend, within reach: you already have both friends needed to make it' : 'Undiscovered friend');
       if (near) b.title = 'Within reach! You already have both friends you need 🌱';
-      b.innerHTML = `<span class="num">${i + 1}</span>` + (fav ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '') + (shn ? '<span class="shiny-dot" aria-hidden="true">✨</span>' : '') + (near ? '<span class="reach-dot" aria-hidden="true">🌱</span>' : '') + (NEW_IDS.has(e.id) ? '<span class="new-tag" aria-hidden="true">NEW</span>' : '') + `<div class="art">${ART.render(e, { label: false })}</div><span class="lbl">${known ? e.name : '???'}</span>`;
+      b.innerHTML = `<span class="num">${i + 1}</span>` + (fav ? '<span class="fave-dot" aria-hidden="true">💗</span>' : '') + (shn ? '<span class="shiny-dot" aria-hidden="true">✨</span>' : '') + (near ? '<span class="reach-dot" aria-hidden="true">🌱</span>' : '') + (NEW_IDS.has(e.id) ? '<span class="new-tag" aria-hidden="true">NEW</span>' : '') + (cake ? '<span class="cake-dot" aria-hidden="true">🎂</span>' : '') + `<div class="art">${ART.render(e, { label: false })}</div><span class="lbl">${known ? e.name : '???'}</span>`;
       if (known) b.addEventListener('click', () => openDetail(e.id));
       else if (near) b.addEventListener('click', () => { SND.play('select'); const m = 'Within reach! 🌱 You already have both friends you need for this one. Keep mixing, or try a 💡 Hint.'; toast(m, 3200); announce(m); });
       else b.tabIndex = -1;
@@ -704,7 +726,7 @@
     const finals = D.elements.filter(e => e.final), ff = finals.filter(e => found.has(e.id)).length;
     $('#bookBar').style.width = (found.size / TOTAL * 100) + '%';
     renderStars();
-    $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★` + (reach.size ? ` · 🌱 ${reach.size} within reach` : '');
+    $('#bookSub').textContent = `${found.size} of ${TOTAL} friends found · ${ff}/${finals.length} legendary ★` + (reach.size ? ` · 🌱 ${reach.size} within reach` : '') + (() => { const n = friendversaries().length; return n ? ` · 🎂 ${n} ${n === 1 ? 'friendversary' : 'friendversaries'} today` : ''; })();
     const counts = { all: TOTAL, found: found.size, missing: TOTAL - found.size, legendary: finals.length, faves: state.faves.length, shiny: state.shinies.length, chain: chainFriends().length, new: `${[...NEW_IDS].filter(id => found.has(id)).length}/${NEW_IDS.size}` };
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { c.querySelector('.n').textContent = counts[c.dataset.filter]; });
     const newChip = document.querySelector('#bookFilter [data-filter="new"]');
@@ -871,7 +893,8 @@
     $('#detailName').textContent = e.name + (e.final ? ' ★' : '');
     $('#detailDesc').textContent = e.desc;
     closeNickForm(false); applyNick(id);
-    { const fs = friendSince(id), el = $('#detailSince'); el.innerHTML = `<span aria-hidden="true">${fs.icon}</span> ${fs.text}`; el.setAttribute('aria-label', fs.text); }
+    { const fs = friendSince(id), el = $('#detailSince'); el.innerHTML = `<span aria-hidden="true">${fs.icon}</span> ${fs.text}`; el.setAttribute('aria-label', fs.text); el.classList.toggle('party', !!fs.party);
+      if (fs.party) document.dispatchEvent(new CustomEvent('ef:friendversary', { detail: { id, kind: fs.party.kind, n: fs.party.n } })); }
     applyMade(id);
     { const sp = $('#detailShiny'), on = state.shinies.includes(id); sp.hidden = !on; sp.textContent = on ? `✨ You've met a shiny ${e.name}!` : ''; }
     const box = $('#detailRecipes'); box.innerHTML = '';
@@ -1033,7 +1056,7 @@
     const btn = $('#detailSticker'); btn.classList.add('busy'); btn.setAttribute('aria-busy', 'true');
     try {
       const night = document.documentElement.dataset.theme === 'night';
-      const canvas = await window.EF_STICKER.make(e, { art: ART.render(e, { label: false }), night, since: friendSince(id).text, fave: isFave(id), nick: nickOf(id) });
+      const canvas = await window.EF_STICKER.make(e, { art: ART.render(e, { label: false }), night, since: (friendSince(id).short || friendSince(id).text), fave: isFave(id), nick: nickOf(id) });
       const blob = await window.EF_STICKER.toBlob(canvas);
       const name = window.EF_STICKER.fileName(e);
       let how = 'download';
@@ -1754,7 +1777,7 @@
   // public hooks (used by the optional Starknet layer and by tests)
   window.EF_GAME = {
     found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, searchBook: q => searchBook(q || '', false), bookQuery: () => bookQuery, setChainFriends, chainFriends, isNewFriend, newFriendIds: () => [...NEW_IDS],
-    applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
+    applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, friendversary, friendversaries, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }
   };

@@ -1452,3 +1452,15 @@ html[data-theme="night"] .stats-recent { background: linear-gradient(120deg, #2a
 html[data-theme="night"] .stats-recent-k { color: #b9c8ff; }
 html[data-theme="night"] .stats-recent-btn { background: #3d2f5c; box-shadow: 0 2px 0 #1f1733; color: #f3e9ff; }
 html[data-theme="night"] .stats-recent-more { background: #3d2f5c; color: #d0bfff; }
+
+/* 🎂 Friendversary */
+.since-pill.party { text-align: center; justify-content: center; background: linear-gradient(120deg, #fff1b8, #ffd9ea, #e6ddff); border: 2px solid #ffb3d1; color: #b0306a; box-shadow: 0 3px 0 #f3bcd4; animation: cakeWiggle 2.4s ease-in-out infinite; }
+.since-pill.party > span[aria-hidden] { display: inline-block; animation: cakeHop 1.2s ease-in-out infinite; }
+@keyframes cakeWiggle { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-1.5deg); } 75% { transform: rotate(1.5deg); } }
+@keyframes cakeHop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+.book-cell .cake-dot { position: absolute; right: 6px; top: 22px; font-size: 13px; line-height: 1; pointer-events: none; animation: cakeHop 1.6s ease-in-out infinite; }
+.book-cell.party { box-shadow: inset 0 0 0 2px #ffc2da, 0 3px 0 #f3d2e2; }
+html.calm .since-pill.party, html.calm .since-pill.party > span[aria-hidden], html.calm .book-cell .cake-dot { animation: none; }
+@media (prefers-reduced-motion: reduce) { .since-pill.party, .since-pill.party > span[aria-hidden], .book-cell .cake-dot { animation: none; } }
+html[data-theme="night"] .since-pill.party { background: linear-gradient(120deg, #6a4a3f, #7a3a66, #4a3f96); border-color: #ff8fbf; color: #fff; box-shadow: 0 3px 0 #2a1424; }
+html[data-theme="night"] .book-cell.party { box-shadow: inset 0 0 0 2px #c45a8c, 0 3px 0 #1f1733; }
