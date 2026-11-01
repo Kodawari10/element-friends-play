@@ -144,6 +144,7 @@
       <p class="since-pill made-pill" id="detailMade" hidden></p>
       <p class="shiny-pill" id="detailShiny" hidden></p>
       <p id="detailDesc"></p>
+      <button type="button" class="btn read-btn" id="detailRead" aria-pressed="false" hidden><span aria-hidden="true">🔈</span> Read to me</button>
       <div class="detail-actions">
         <button type="button" class="btn sticker-btn play-btn" id="detailPlay" aria-label="Bring this friend to the playfield"><span aria-hidden="true">🧺</span> Bring to playfield</button>
         <button type="button" class="btn sticker-btn" id="detailSticker" aria-label="Save a sticker picture of this friend"><span aria-hidden="true">📸</span> Save sticker</button>
@@ -376,7 +377,7 @@
         <li>On a phone, <b>tap two friends</b> to mix (or press &amp; hold to drag).</li>
         <li>Each day a <b>Daily Friend</b> appears on the playfield. Make it to grow your 🔥 streak (tap it for a clue)!</li>
         <li>Prefer a cozy evening? Settings has <b>Day / Auto / Night</b> look (Auto follows your clock).</li>
-        <li>Earn cute <b>Achievements</b> badges as you play — open them from Settings (offline, no wallet)! <b>📊 My stats</b> in Settings shows your mixer rank (the reveal card cheers when you rank up 🎖️), mixes, pets, best streak and most-made friend. Hearing Japanese names and acing the Name quiz earns badges too 🗾💮 On a friend's <b>🎂 friendversary</b> (1, 2 or 3 weeks, or a whole month or year after you met) their card throws a little party and the Collection shows a 🎂. Meeting the newest friends earns 🏡 New Neighbours and 🎀 Welcome Committee, and <b>🗓️ Met today</b> in My stats shows who you met today (tap one to open their card).</li>
+        <li>Earn cute <b>Achievements</b> badges as you play — open them from Settings (offline, no wallet)! <b>📊 My stats</b> in Settings shows your mixer rank (the reveal card cheers when you rank up 🎖️), mixes, pets, best streak and most-made friend. Hearing Japanese names and acing the Name quiz earns badges too 🗾💮 Can't read yet? Tap <b>🔈 Read to me</b> on a friend's card to hear their story, with each word lighting up as it's read. On a friend's <b>🎂 friendversary</b> (1, 2 or 3 weeks, or a whole month or year after you met) their card throws a little party and the Collection shows a 🎂. Meeting the newest friends earns 🏡 New Neighbours and 🎀 Welcome Committee, and <b>🗓️ Met today</b> in My stats shows who you met today (tap one to open their card).</li>
         <li>The little number on each friend shows how many <b>new friends it can still help make</b>. A ✓ means it's all mixed out!</li>
         <li>Open a friend from your collection and <b>tap it to pet it</b>: every friend has its own little voice and wiggle 💕</li>
         <li>While dragging, a tiny bubble peeks at the friend underneath: <b>?</b> means new, <b>💭 tried</b> means that pair didn't mix before, and a picture shows a mix you already know.</li>
@@ -443,6 +444,7 @@
   <script src="js/omikuji.js"></script>
   <script src="js/achievements.js"></script>
   <script src="js/stats.js"></script>
+  <script src="js/readaloud.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/costumes.js"></script>
   <!-- optional Starknet layer: the game works fully without it (vendor bundle is lazy-loaded, local only) -->
