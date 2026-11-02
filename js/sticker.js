@@ -1,4 +1,4 @@
-/* Element Friends — "Save sticker": draws a cute PNG card of a friend, fully offline (no network, no wallet). */
+/* Element Friends — "Save sticker": draws a cute PNG card of a friend, fully offline (no network). */
 (function (root) {
   const W = 640, H = 760;
   const FONT = 'ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", "Quicksand", "Comic Sans MS", system-ui, sans-serif';

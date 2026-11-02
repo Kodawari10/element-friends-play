@@ -1,5 +1,5 @@
 /* Element Friends — Japanese names 🗾: every friend's card shows its name in Japanese (kana, kanji when it has one, and
-   romaji), and tapping it says the word out loud with the device's Japanese voice. Offline, no wallet needed. */
+   romaji), and tapping it says the word out loud with the device's Japanese voice. Offline. */
 (function () {
   'use strict';
   const KEY = 'element-friends-jp-v1';

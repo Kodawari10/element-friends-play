@@ -1,11 +1,11 @@
 /* Element Friends — Friend Code: a short, offline code to move your found friends to another phone or laptop.
-   Format: EF1-<base64url bitset over the stable chain ids>-<2-char checksum>. Restoring only ever ADDS friends. */
+   Format: EF1-<base64url bitset over the stable friend numbers in js/friend-ids.js>-<2-char checksum>. Restoring only ever ADDS friends. */
 (function () {
   'use strict';
   const PREFIX = 'EF1';
   let G;
   const $ = s => document.querySelector(s);
-  function ids() { return (window.EF_CHAIN_IDS && window.EF_CHAIN_IDS.ids) || {}; }
+  function ids() { return (window.EF_FRIEND_IDS && window.EF_FRIEND_IDS.ids) || {}; }
   function byNum() { const m = {}; Object.entries(ids()).forEach(([k, n]) => { m[n] = k; }); return m; }
   const b64 = bytes => btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   const unb64 = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };

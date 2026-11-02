@@ -1,4 +1,4 @@
-/* Element Friends — Daily Friend quest: one friend to make each day, with a cozy streak. Offline, no wallet needed. */
+/* Element Friends — Daily Friend quest: one friend to make each day, with a cozy streak. Offline. */
 (function () {
   'use strict';
   const KEY = 'element-friends-daily-v1';

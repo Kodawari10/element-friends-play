@@ -1,4 +1,4 @@
-/* Element Friends — Local Achievements: cute offline milestone badges. No wallet needed. */
+/* Element Friends — Local Achievements: cute offline milestone badges. */
 (function () {
   'use strict';
   const KEY = 'element-friends-achievements-v1';

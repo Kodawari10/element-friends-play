@@ -1,4 +1,4 @@
-/* Element Friends — Welcome back 👋: when you come back after a while, a friend waves hello. Offline, no wallet needed. */
+/* Element Friends — Welcome back 👋: when you come back after a while, a friend waves hello. Offline. */
 (function () {
   'use strict';
   const KEY = 'element-friends-welcome-v1';

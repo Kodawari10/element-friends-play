@@ -1,5 +1,5 @@
 /* Element Friends — Omikuji 🎋: once a day, shake the little shrine box for a kawaii fortune slip (always a happy one),
-   with a lucky friend from your collection and a lucky element to try mixing today. Offline, no wallet needed. */
+   with a lucky friend from your collection and a lucky element to try mixing today. Offline. */
 (function () {
   'use strict';
   const KEY = 'element-friends-omikuji-v1';

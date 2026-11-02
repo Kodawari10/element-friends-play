@@ -31,7 +31,6 @@
         <button class="btn icon" id="btnClear" aria-label="Clear the playfield"><i data-icon="broom"></i><span class="lbl">Clear</span></button>
         <button class="btn icon" id="btnMute" aria-label="Mute sounds" aria-pressed="false"><i data-icon="sound"></i></button>
         <button class="btn icon" id="btnMenu" aria-label="Settings"><i data-icon="gear"></i></button>
-        <button class="btn chain-btn" id="btnWallet" aria-label="Connect a Starknet wallet (optional)" hidden><span class="chain-dot" aria-hidden="true"></span><i class="chain-ico" aria-hidden="true">✦</i><span class="lbl" id="btnWalletLbl">Connect</span></button>
       </nav>
     </header>
 
@@ -76,9 +75,7 @@
       <p class="reveal-recipe" id="revealRecipe"></p>
       <div class="reveal-actions">
         <button class="btn big primary" id="revealOk">Yay! ♡</button>
-        <button class="btn chain" id="revealMint" hidden>✦ Mint on Starknet</button>
       </div>
-      <p class="mint-status" id="revealMintStatus" role="status" aria-live="polite"></p>
     </div>
   </div>
 
@@ -104,7 +101,6 @@
         <button type="button" class="btn filter-chip" role="radio" aria-checked="false" data-filter="legendary">★ Legendary <b class="n"></b></button>
         <button type="button" class="btn filter-chip" role="radio" aria-checked="false" data-filter="faves">💗 Besties <b class="n"></b></button>
         <button type="button" class="btn filter-chip shiny-chip" role="radio" aria-checked="false" data-filter="shiny" hidden>✨ Shiny <b class="n"></b></button>
-        <button type="button" class="btn filter-chip chain-filter" role="radio" aria-checked="false" data-filter="chain" hidden><span aria-hidden="true">✦</span> On Starknet <b class="n"></b></button>
         <button type="button" class="btn filter-chip new-chip" role="radio" aria-checked="false" data-filter="new">🆕 New <b class="n"></b></button>
       </div>
       <label class="search book-search" id="bookSearchWrap">
@@ -150,7 +146,6 @@
         <button type="button" class="btn sticker-btn" id="detailSticker" aria-label="Save a sticker picture of this friend"><span aria-hidden="true">📸</span> Save sticker</button>
       </div>
       <div id="detailRecipes" class="detail-recipes"></div>
-      <div id="detailChain" class="detail-chain"></div>
     </div>
   </div>
 
@@ -208,7 +203,7 @@
     <div class="sheet small">
       <button class="btn icon close" data-close aria-label="Close Friend Code"><i data-icon="x"></i></button>
       <h2 id="backupTitle">💌 Friend Code</h2>
-      <p class="muted">Copy this code to bring your friends to another phone or laptop. No account or wallet needed!</p>
+      <p class="muted">Copy this code to bring your friends to another phone or laptop. No account needed!</p>
       <label class="backup-lbl" for="backupCode" id="backupCount">This code holds 4 friends 💖</label>
       <div class="backup-row">
         <input id="backupCode" class="backup-code" type="text" readonly spellcheck="false" aria-describedby="backupCount">
@@ -252,26 +247,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Starknet: wallet picker -->
-  <div class="modal wallets" id="wallets" role="dialog" aria-modal="true" aria-labelledby="walletsTitle" hidden>
-    <div class="sheet small">
-      <button class="btn icon close" data-close aria-label="Close"><i data-icon="x"></i></button>
-      <h2 id="walletsTitle">Connect a Starknet wallet</h2>
-      <p class="muted">Optional! Mint your friends as cute collectibles on Starknet <b id="walletsNet">Sepolia testnet</b>. Play with Cartridge for free mints (no seed phrase) — or connect Ready / Braavos.</p>
-      <div id="walletList" class="wallet-list"></div>
-    </div>
-  </div>
-
-  <!-- Starknet: panel -->
-  <div class="modal chainpanel" id="chainPanel" role="dialog" aria-modal="true" aria-labelledby="chainTitle" hidden>
-    <div class="sheet small">
-      <button class="btn icon close" data-close aria-label="Close"><i data-icon="x"></i></button>
-      <h2 id="chainTitle">✦ Starknet</h2>
-      <div id="chainBody"></div>
-    </div>
-  </div>
-
 
   <!-- Achievements -->
   <!-- 📊 My stats (read-only) -->
@@ -377,7 +352,7 @@
         <li>On a phone, <b>tap two friends</b> to mix (or press &amp; hold to drag).</li>
         <li>Each day a <b>Daily Friend</b> appears on the playfield. Make it to grow your 🔥 streak (tap it for a clue)!</li>
         <li>Prefer a cozy evening? Settings has <b>Day / Auto / Night</b> look (Auto follows your clock).</li>
-        <li>Earn cute <b>Achievements</b> badges as you play — open them from Settings (offline, no wallet)! <b>📊 My stats</b> in Settings shows your mixer rank (the reveal card cheers when you rank up 🎖️), mixes, pets, best streak and most-made friend. Hearing Japanese names and acing the Name quiz earns badges too 🗾💮 Can't read yet? Tap <b>🔈 Read to me</b> on a friend's card to hear their story, with each word lighting up as it's read. On a friend's <b>🎂 friendversary</b> (1, 2 or 3 weeks, or a whole month or year after you met) their card throws a little party and the Collection shows a 🎂. Meeting the newest friends earns 🏡 New Neighbours and 🎀 Welcome Committee, and <b>🗓️ Met today</b> in My stats shows who you met today (tap one to open their card).</li>
+        <li>Earn cute <b>Achievements</b> badges as you play — open them from Settings (works offline)! <b>📊 My stats</b> in Settings shows your mixer rank (the reveal card cheers when you rank up 🎖️), mixes, pets, best streak and most-made friend. Hearing Japanese names and acing the Name quiz earns badges too 🗾💮 Can't read yet? Tap <b>🔈 Read to me</b> on a friend's card to hear their story, with each word lighting up as it's read. On a friend's <b>🎂 friendversary</b> (1, 2 or 3 weeks, or a whole month or year after you met) their card throws a little party and the Collection shows a 🎂. Meeting the newest friends earns 🏡 New Neighbours and 🎀 Welcome Committee, and <b>🗓️ Met today</b> in My stats shows who you met today (tap one to open their card).</li>
         <li>The little number on each friend shows how many <b>new friends it can still help make</b>. A ✓ means it's all mixed out!</li>
         <li>Open a friend from your collection and <b>tap it to pet it</b>: every friend has its own little voice and wiggle 💕</li>
         <li>While dragging, a tiny bubble peeks at the friend underneath: <b>?</b> means new, <b>💭 tried</b> means that pair didn't mix before, and a picture shows a mix you already know.</li>
@@ -447,12 +422,8 @@
   <script src="js/readaloud.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/costumes.js"></script>
-  <!-- optional Starknet layer: the game works fully without it (vendor bundle is lazy-loaded, local only) -->
-  <script src="js/chain-ids.js"></script>
+  <script src="js/friend-ids.js"></script>
   <script src="js/backup.js"></script>
   <script src="js/install.js"></script>
-  <script src="js/starknet-config.js"></script>
-  <script src="js/starknet-abi.js"></script>
-  <script src="js/starknet.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-/* Element Friends — 📊 My stats: a cozy read-only page of your play so far. Offline, no wallet needed, never changes your save. */
+/* Element Friends — 📊 My stats: a cozy read-only page of your play so far. Offline, never changes your save. */
 (function () {
   'use strict';
   const D = window.EF_DATA, ART = window.EF_ART;
@@ -27,7 +27,6 @@
     const made = st.made && typeof st.made === 'object' ? st.made : {};
     let top = null;
     Object.keys(made).forEach(id => { if (D.byId[id] && found.has(id) && (!top || made[id] > made[top] || (made[id] === made[top] && D.byId[id].name < D.byId[top].name))) top = id; });
-    const chain = typeof G.chainFriends === 'function' ? G.chainFriends().length : 0;
     return {
       found: found.size, total: D.elements.length,
       legends: legends.filter(e => found.has(e.id)).length, legendTotal: legends.length,
@@ -36,7 +35,7 @@
       bestCombo: num(st.bestCombo), streak: num(daily.streak), bestStreak: Math.max(num(daily.streak), num(daily.best)),
       ach: achDefs.filter(a => a.unlocked).length, achTotal: achDefs.length,
       jpBest: num(jp.played) > 0 ? Math.min(5, num(jp.best)) : 0, jpPlayed: num(jp.played),
-      since: met[0] || '', top, topCount: top ? num(made[top]) : 0, chain
+      since: met[0] || '', top, topCount: top ? num(made[top]) : 0
     };
   }
 
@@ -86,7 +85,6 @@
       tile('🎌', s.jpPlayed ? `${s.jpBest} / 5` : '—', 'best Name quiz')
     ];
     if (s.nicks) tiles.push(tile('🏷️', s.nicks, s.nicks === 1 ? 'nickname given' : 'nicknames given'));
-    if (s.chain) tiles.push(tile('✦', s.chain, 'minted on Starknet', 'chain'));
     document.getElementById('statsGrid').innerHTML = tiles.join('');
     const rk = document.getElementById('statsRank');
     if (rk) {

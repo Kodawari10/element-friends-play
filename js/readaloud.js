@@ -1,5 +1,5 @@
 /* Element Friends — 🔈 Read to me: a friend's card reads its little story aloud in English, lighting up each word as it goes.
-   Uses the device's own speech voice (works offline on most devices). Never saved, no wallet needed. */
+   Uses the device's own speech voice (works offline on most devices). Never saved. */
 (function () {
   'use strict';
   const D = window.EF_DATA;
