@@ -71,7 +71,8 @@
 
   function pickVoice() {
     try {
-      const vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+      // only on-device voices: a cloud voice would send the word to a speech server
+      const vs = window.speechSynthesis ? speechSynthesis.getVoices().filter(v => v.localService === true) : [];
       voice = vs.find(v => /^ja([-_]|$)/i.test(v.lang)) || null;
     } catch (e) { voice = null; }
     return voice;
@@ -94,11 +95,12 @@
 
   function speak(w) {
     if (G.state.muted || !window.speechSynthesis || !window.SpeechSynthesisUtterance) return false;
+    if (!voice && !pickVoice()) return false; // no on-device Japanese voice: stay quiet
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(w.kana);
       u.lang = 'ja-JP'; u.rate = 0.8; u.pitch = 1.25;
-      if (voice || pickVoice()) u.voice = voice;
+      u.voice = voice;
       speechSynthesis.speak(u); return true;
     } catch (err) { return false; }
   }
