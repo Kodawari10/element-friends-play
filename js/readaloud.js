@@ -1,5 +1,5 @@
 /* Element Friends — 🔈 Read to me: a friend's card reads its little story aloud in English, lighting up each word as it goes.
-   Uses the device's own speech voice (works offline on most devices). Never saved. */
+   Uses only the device's own on-device voice (never a cloud voice), so it works offline. Never saved. */
 (function () {
   'use strict';
   const D = window.EF_DATA;
@@ -9,8 +9,9 @@
 
   function pickVoice() {
     try {
-      const vs = can() ? speechSynthesis.getVoices() : [];
-      voice = vs.find(v => /^en[-_](GB|US)/i.test(v.lang) && /female|samantha|karen|serena|google/i.test(v.name)) || vs.find(v => /^en([-_]|$)/i.test(v.lang)) || null;
+      // only on-device voices: a cloud voice would send the story text to a speech server
+      const vs = can() ? speechSynthesis.getVoices().filter(v => v.localService === true) : [];
+      voice = vs.find(v => /^en[-_](GB|US)/i.test(v.lang) && /female|samantha|karen|serena/i.test(v.name)) || vs.find(v => /^en([-_]|$)/i.test(v.lang)) || null;
     } catch (e) { voice = null; }
     return voice;
   }
@@ -48,6 +49,7 @@
     if (reading) { stop(); return false; }
     if (G.state.muted) { G.ui.toast('🔈 Turn the sound on and I’ll read it to you!', 2600); G.ui.announce('Sound is off. Turn it on to hear the story.'); return false; }
     if (!can()) return false;
+    if (!voice && !pickVoice()) { G.ui.toast('🔈 This device has no built-in English voice yet.', 2600); return false; }
     const nick = G.nickOf ? G.nickOf(id) : '';
     const intro = `${nick ? `${nick} the ${e.name}` : e.name}. `;
     spoken = intro + e.desc; startAt = intro.length;
@@ -56,7 +58,7 @@
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(spoken);
       u.lang = 'en-GB'; u.rate = 0.88; u.pitch = 1.2;
-      if (voice || pickVoice()) u.voice = voice;
+      u.voice = voice;
       u.onboundary = ev => {
         if (!reading || ev.name === 'sentence') return;
         const c = ev.charIndex - startAt; if (c < 0) return;

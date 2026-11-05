@@ -1,5 +1,5 @@
 /* Offline cache for Element Friends */
-const CACHE = 'element-friends-v74';
+const CACHE = 'element-friends-v75';
 const FILES = ['./', './index.html', './css/style.css', './js/data.js', './js/art.js', './js/audio.js', './js/sticker.js', './js/game.js', './js/daily.js', './js/welcome.js', './js/japanese.js', './js/omikuji.js', './js/achievements.js', './js/stats.js', './js/readaloud.js', './js/weather.js', './js/costumes.js', './js/friend-ids.js', './js/backup.js', './js/install.js',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
