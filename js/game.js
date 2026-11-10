@@ -738,6 +738,7 @@
     const shinyChip = document.querySelector('#bookFilter [data-filter="shiny"]'); if (shinyChip) shinyChip.hidden = !counts.shiny;
     if (bookFilter === 'shiny' && !counts.shiny) bookFilter = 'all';
     bookQuery = ''; $('#bookSearch').value = '';
+    renderFamilies();
     applyBookFilter(bookFilter, false);
     openModal('book');
     document.dispatchEvent(new CustomEvent('ef:book'));
@@ -754,6 +755,46 @@
   const isNewFriend = id => NEW_IDS.has(id);
   // Collection filter chips (session only, nothing saved).
   let bookFilter = 'all';
+  // 🏡 Friend families: a second row of chips (session only). '' means every kind.
+  const FAM = window.EF_FAMILIES;
+  let bookFamily = '';
+  function inFamily(id) { return !bookFamily || (FAM && FAM.has(bookFamily, id)); }
+  function familyLabel() { return bookFamily && FAM ? `${FAM.emoji(bookFamily)} ${FAM.name(bookFamily)} friends` : 'friends of every kind'; }
+  function renderFamilies() {
+    const box = $('#bookFamilies'); if (!box || !FAM) return;
+    const cur = bookFamily;
+    box.querySelectorAll('.family-chip[data-family]:not([data-family=""])').forEach(c => c.remove());
+    FAM.list.forEach(f => {
+      const ids = FAM.ids(f.id), n = ids.filter(id => found.has(id)).length, t = ids.length;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn family-chip'; b.setAttribute('role', 'radio');
+      b.dataset.family = f.id; b.innerHTML = `${f.emoji} ${f.name} <b class="n">${n}/${t}</b>`;
+      b.setAttribute('aria-label', `${f.name} friends, ${n} of ${t} found`);
+      box.appendChild(b);
+    });
+    if (cur && !FAM.list.some(f => f.id === cur)) bookFamily = '';
+    paintFamilies();
+  }
+  function paintFamilies() {
+    document.querySelectorAll('#bookFamilies .family-chip').forEach(c => {
+      const on = (c.dataset.family || '') === bookFamily;
+      c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); c.tabIndex = on ? 0 : -1;
+    });
+  }
+  function setBookFamily(id, speak) {
+    if (id && !(FAM && FAM.list.some(f => f.id === id))) id = '';
+    bookFamily = id || '';
+    const shown = applyBookFilter(bookFilter, false);
+    paintFamilies();
+    if (speak) {
+      const chip = document.querySelector(`#bookFamilies .family-chip[data-family="${bookFamily}"]`) || document.querySelector('#bookFamilies .family-chip[data-family=""]');
+      announce(bookFamily ? `Showing ${shown} ${familyLabel()}` : `Showing ${shown} friends of every kind`);
+      if (chip && !still()) { chip.classList.remove('pop'); void chip.offsetWidth; chip.classList.add('pop'); }
+      SND.play('select');
+    }
+    document.dispatchEvent(new CustomEvent('ef:family', { detail: { family: bookFamily, shown } }));
+    return shown;
+  }
   // 🔍 Find a friend: Collection search over found friends only (name, nickname, Japanese kana/romaji/kanji). Never saved.
   let bookQuery = '';
   const fold = s => String(s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
@@ -783,14 +824,14 @@
     let shown = 0;
     $('#bookGrid').querySelectorAll('.book-cell').forEach(c => {
       const locked = c.classList.contains('locked'), fin = c.classList.contains('final');
-      const vis = bookMatches(c.dataset.id) && (mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen')) || (mode === 'new' && NEW_IDS.has(c.dataset.id)));
+      const vis = bookMatches(c.dataset.id) && inFamily(c.dataset.id) && (mode === 'all' || (mode === 'found' && !locked) || (mode === 'missing' && locked) || (mode === 'legendary' && fin) || (mode === 'faves' && c.classList.contains('fave')) || (mode === 'shiny' && c.classList.contains('shiny-seen')) || (mode === 'new' && NEW_IDS.has(c.dataset.id)));
       c.hidden = !vis; if (vis) shown++;
     });
     document.querySelectorAll('#bookFilter .filter-chip').forEach(c => { const on = c.dataset.filter === mode; c.classList.toggle('active', on); c.setAttribute('aria-checked', String(on)); c.tabIndex = on ? 0 : -1; });
-    const empty = $('#bookEmpty'); empty.hidden = shown > 0; empty.textContent = shown ? '' : bookQuery ? `No found friend called “${$('#bookSearch').value.trim()}” here yet 🔍 Keep mixing, or try another name!` : (FILTER_EMPTY[mode] || 'Nobody here yet!');
+    const empty = $('#bookEmpty'); empty.hidden = shown > 0; empty.textContent = shown ? '' : bookQuery ? `No found friend called “${$('#bookSearch').value.trim()}” here yet 🔍 Keep mixing, or try another name!` : bookFamily ? `No ${FAM.name(bookFamily).toLowerCase()} friends here yet. Keep mixing! ${FAM.emoji(bookFamily)}` : (FILTER_EMPTY[mode] || 'Nobody here yet!');
     $('#bookGrid').scrollTop = 0;
     if (speak) {
-      announce(`Showing ${shown} ${FILTER_NAMES[mode]}`);
+      announce(`Showing ${shown} ${FILTER_NAMES[mode]}${bookFamily ? `, ${familyLabel()}` : ''}`);
       const chip = document.querySelector(`#bookFilter [data-filter="${mode}"]`);
       if (chip && !still()) { chip.classList.remove('pop'); void chip.offsetWidth; chip.classList.add('pop'); }
       SND.play('select');
@@ -811,9 +852,18 @@
     applyBookFilter(chips[j].dataset.filter, true); chips[j].focus();
   });
   $('#bookFilter').addEventListener('animationend', ev => ev.target.classList.remove('pop'));
+  $('#bookFamilies').addEventListener('click', ev => { const c = ev.target.closest('.family-chip'); if (c) setBookFamily(c.dataset.family || '', true); });
+  $('#bookFamilies').addEventListener('keydown', ev => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(ev.key)) return;
+    ev.preventDefault();
+    const chips = [...document.querySelectorAll('#bookFamilies .family-chip')], i = chips.findIndex(c => (c.dataset.family || '') === bookFamily);
+    const j = ev.key === 'Home' ? 0 : ev.key === 'End' ? chips.length - 1 : (i + ((ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') ? -1 : 1) + chips.length) % chips.length;
+    setBookFamily(chips[j].dataset.family || '', true); chips[j].focus();
+  });
+  $('#bookFamilies').addEventListener('animationend', ev => ev.target.classList.remove('pop'));
   // ---------- flip through friends (detail view) ----------
   function flipList(id) {
-    let list = D.elements.filter(e => found.has(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id)) && (bookFilter !== 'shiny' || state.shinies.includes(e.id)) && (bookFilter !== 'new' || NEW_IDS.has(e.id))).map(e => e.id);
+    let list = D.elements.filter(e => found.has(e.id) && inFamily(e.id) && (bookFilter !== 'legendary' || e.final) && (bookFilter !== 'faves' || isFave(e.id)) && (bookFilter !== 'shiny' || state.shinies.includes(e.id)) && (bookFilter !== 'new' || NEW_IDS.has(e.id))).map(e => e.id);
     if (!list.includes(id)) list = D.elements.filter(e => found.has(e.id)).map(e => e.id);
     return list;
   }
@@ -847,7 +897,7 @@
   function surpriseFriend(rand) {
     const r = typeof rand === 'function' ? rand : Math.random;
     const all = D.elements.filter(e => found.has(e.id)).map(e => e.id);
-    const filtered = all.filter(id => (bookFilter !== 'legendary' || D.byId[id].final) && (bookFilter !== 'faves' || isFave(id)) && (bookFilter !== 'shiny' || state.shinies.includes(id)) && (bookFilter !== 'new' || NEW_IDS.has(id)));
+    const filtered = all.filter(id => inFamily(id) && (bookFilter !== 'legendary' || D.byId[id].final) && (bookFilter !== 'faves' || isFave(id)) && (bookFilter !== 'shiny' || state.shinies.includes(id)) && (bookFilter !== 'new' || NEW_IDS.has(id)));
     const list = filtered.length ? filtered : all;
     if (!list.length) return null;
     const cur = !$('#detail').hidden ? $('#detailArt').dataset.id : '';
@@ -1766,7 +1816,7 @@
 
   // public hooks (used by the other modules and by tests)
   window.EF_GAME = {
-    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, searchBook: q => searchBook(q || '', false), bookQuery: () => bookQuery, isNewFriend, newFriendIds: () => [...NEW_IDS],
+    found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setFamily: (id, speak) => setBookFamily(id, !!speak), bookFamily: () => bookFamily, searchBook: q => searchBook(q || '', false), bookQuery: () => bookQuery, isNewFriend, newFriendIds: () => [...NEW_IDS],
     applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, friendversary, friendversaries, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }

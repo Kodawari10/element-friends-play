@@ -1382,3 +1382,17 @@ html[data-theme="night"] .read-btn { background: #2a2f52; color: #b9c8ff; box-sh
 html[data-theme="night"] .read-btn.reading { background: linear-gradient(120deg, #7a3a66, #6a4a3f); color: #fff; box-shadow: 0 3px 0 #2a1424, inset 0 0 0 2px #ff8fbf; }
 html[data-theme="night"] #detailDesc .ra-w.on { background: #6a4a8f; color: #fff; box-shadow: 0 0 0 2px #6a4a8f; }
 html.calm #detailDesc .ra-w { transition: none; }
+
+/* 🏡 Friend families */
+.book-families { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.family-chip { font-size: 13px; padding: 6px 10px; min-height: 40px; border-radius: 999px; background: #fff; color: #6b4a86; box-shadow: 0 2px 0 #eadcf3, inset 0 0 0 2px #f3e4f4; font-weight: 800; }
+.family-chip .n { display: inline-block; margin-left: 4px; min-width: 1.6em; padding: 0 5px; border-radius: 999px; background: #f3e4f4; font-size: 11px; }
+.family-chip.active, .family-chip[aria-checked="true"] { background: linear-gradient(140deg, #e8f6ff, #fdeefe); color: #5a3f8a; box-shadow: 0 3px 0 #d4c4f0, inset 0 0 0 2px #c9b6ff; }
+.family-chip.active .n { background: #8f7cf7; color: #fff; }
+.family-chip.pop { animation: chipPop .35s cubic-bezier(.3, 1.4, .5, 1); }
+html[data-theme="night"] .family-chip { background: #2c2445; color: #e6d9ff; box-shadow: 0 2px 0 #17112a, inset 0 0 0 2px #4a3f77; }
+html[data-theme="night"] .family-chip .n { background: #4a3f77; color: #e6d9ff; }
+html[data-theme="night"] .family-chip.active, html[data-theme="night"] .family-chip[aria-checked="true"] { background: linear-gradient(140deg, #3a2f66, #4a2f5c); color: #fff; box-shadow: 0 3px 0 #17112a, inset 0 0 0 2px #b9a6ff; }
+html[data-theme="night"] .family-chip.active .n { background: #b9a6ff; color: #231a40; }
+html.calm .family-chip.pop { animation: none; }
+@media (prefers-reduced-motion: reduce) { .family-chip.pop { animation: none; } }
