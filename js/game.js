@@ -105,7 +105,7 @@
   }
   function save() {
     const w = board.clientWidth || 1, h = board.clientHeight || 1;
-    state.board = pieces().filter(p => !p.dataset.busy).map(p => Object.assign({ id: p.dataset.id, x: +(p._x / w).toFixed(4), y: +(p._y / h).toFixed(4) }, p.dataset.shiny ? { s: 1 } : {}));
+    state.board = pieces().filter(p => !p.dataset.busy && !p.dataset.hiding).map(p => Object.assign({ id: p.dataset.id, x: +(p._x / w).toFixed(4), y: +(p._y / h).toFixed(4) }, p.dataset.shiny ? { s: 1 } : {}));
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage full / private mode */ }
   }
 
@@ -224,6 +224,7 @@
     return p;
   }
   function removePiece(p) {
+    if (seeking && seeking.el === p) { seeking = null; paintSeekBtn(); }
     if (sel && sel.el === p) clearSel();
     p.dataset.busy = 1; p.classList.add('poof'); SND.play('poof');
     setTimeout(() => { p.remove(); updateBoardState(); }, 340);
@@ -243,9 +244,9 @@
   function updateBoardState() {
     board.classList.toggle('has-pieces', board.querySelector('.piece') !== null);
     const t = document.getElementById('btnTidy');
-    if (t) { const show = pieces().filter(p => !p.dataset.busy).length >= TIDY_MIN; if (t.hidden === show) t.hidden = !show; }
+    if (t) { const show = pieces().filter(p => !p.dataset.busy && !p.dataset.hiding).length >= TIDY_MIN; if (t.hidden === show) t.hidden = !show; }
     const ph = document.getElementById('btnPhoto');
-    if (ph) { const show = pieces().filter(p => !p.dataset.busy).length >= PHOTO_MIN; if (ph.hidden === show) ph.hidden = !show; }
+    if (ph) { const show = pieces().filter(p => !p.dataset.busy && !p.dataset.hiding).length >= PHOTO_MIN; if (ph.hidden === show) ph.hidden = !show; }
   }
 
   // ---------- tidy up: friends hop into neat rows (sorted by name, twins side by side) ----------
@@ -389,7 +390,9 @@
   let lastTap = null; // double-tap a friend on the playfield to make a twin
   const TWIN_MS = 380;
   function handleTap(src) {
-    SND.unlock(); markSeen(src.id);
+    SND.unlock();
+    if (src.type === 'piece' && src.el && src.el.dataset.hiding) { foundSeek(src.el); return; }
+    markSeen(src.id);
     if (src.type === 'piece') {
       const now = performance.now();
       if (lastTap && lastTap.el === src.el && now - lastTap.t < TWIN_MS) { lastTap = null; clearSel(); twin(src.el); return; }
@@ -409,6 +412,7 @@
 
   function twin(p) {
     if (!p || !p.isConnected || p.dataset.busy) return null;
+    if (p.dataset.hiding) { foundSeek(p); return null; }
     const id = p.dataset.id, e = D.byId[id], w = board.clientWidth;
     if (sel && sel.el === p) clearSel();
     // land beside the original, on whichever side has the most room
@@ -460,6 +464,7 @@
   function onDown(ev, src) {
     if (ev.button > 0) return;
     SND.unlock();
+    if (src.type === 'piece' && src.el && src.el.dataset.hiding) { ev.preventDefault(); foundSeek(src.el); return; }
     if (drag) endDrag(null);
     const touch = ev.pointerType !== 'mouse';
     drag = { src, pid: ev.pointerId, sx: ev.clientX, sy: ev.clientY, cx: ev.clientX, cy: ev.clientY, active: false, touch, target: null };
@@ -542,6 +547,8 @@
 
   // ---------- combining ----------
   function combine(a, b, dropped) {
+    if (a.el && a.el.dataset.hiding) { foundSeek(a.el); return; }
+    if (b.el && b.el.dataset.hiding) { foundSeek(b.el); return; }
     const r = D.combine(a.id, b.id);
     if (!r) { fail(a, b, dropped); return; }
     // make sure both friends are on the board for the merge animation
@@ -1180,7 +1187,7 @@
   }
   async function groupPhoto(opts) {
     opts = opts || {};
-    const all = pieces().filter(p => !p.dataset.busy && D.byId[p.dataset.id]);
+    const all = pieces().filter(p => !p.dataset.busy && !p.dataset.hiding && D.byId[p.dataset.id]);
     if (all.length < PHOTO_MIN || photoBusy || !window.EF_STICKER || !window.EF_STICKER.makeGroup) { if (all.length < PHOTO_MIN && !opts.quiet) toast('Bring at least two friends to the playfield for a photo 📸'); return null; }
     photoBusy = true;
     const btn = $('#btnPhoto'); btn.classList.add('busy'); btn.setAttribute('aria-busy', 'true');
@@ -1503,6 +1510,7 @@
   // ---------- clear + undo ----------
   let undoSnap = null, undoT = 0;
   function clearBoard() {
+    endSeek(true);
     clearSel(); const ps = pieces().filter(p => !p.dataset.busy);
     if (!ps.length) { toast('The playfield is already tidy ✨'); return; }
     const w = board.clientWidth || 1, h = board.clientHeight || 1;
@@ -1815,9 +1823,91 @@
   });
 
   // public hooks (used by the other modules and by tests)
+
+  // 🙈 Hide and seek: a found friend hides on the playfield (behind a little bush). Tap them to find them.
+  // Session only: a hiding friend is never written to the save until they're found (and only if we placed them for the game).
+  let seeking = null, lastSeek = '';
+  function whoName(id) { const n = nickOf(id); return n ? `${n} the ${D.byId[id].name}` : D.byId[id].name; }
+  function paintSeekBtn() {
+    const b = $('#btnSeek'); if (!b) return;
+    const on = !!(seeking && seeking.el && seeking.el.isConnected);
+    b.classList.toggle('seeking', on); b.setAttribute('aria-pressed', String(on));
+    b.setAttribute('aria-label', on ? `${whoName(seeking.id)} is hiding. Keep looking, or start a new game` : 'Hide and seek: a friend hides on the playfield, tap to find them');
+  }
+  function dressHider(el) {
+    el.dataset.hiding = '1'; el.classList.add('hiding');
+    if (!el.querySelector('.hide-bush')) {
+      const b = document.createElement('span'); b.className = 'hide-bush'; b.setAttribute('aria-hidden', 'true');
+      b.innerHTML = '<span class="hide-eyes">👀</span>';
+      el.appendChild(b);
+    }
+    const lbl = el.querySelector('.lbl'); if (lbl) lbl.textContent = '???';
+    el.setAttribute('aria-label', `Find ${whoName(el.dataset.id)}. They're hiding on the playfield.`);
+  }
+  function undressHider(el) {
+    if (!el) return;
+    delete el.dataset.hiding; el.classList.remove('hiding');
+    const b = el.querySelector('.hide-bush'); if (b) b.remove();
+    const e = D.byId[el.dataset.id];
+    const lbl = el.querySelector('.lbl'); if (lbl && e) lbl.textContent = e.name;
+    if (e) el.setAttribute('aria-label', (el.dataset.shiny ? 'Shiny ' : '') + e.name + ' on the playfield. Press Enter to select, D to make a twin, Delete to remove.');
+  }
+  function endSeek(silent) {
+    if (!seeking) return;
+    const { el, spawned } = seeking; seeking = null; paintSeekBtn();
+    if (el && el.isConnected) {
+      if (spawned) el.remove();
+      else undressHider(el);
+    }
+    updateBoardState();
+    if (!silent) { toast('The hiding friend came out 🙈'); announce('Hide and seek ended.'); }
+  }
+  function foundSeek(el) {
+    if (!seeking || !el || el !== seeking.el) return false;
+    const id = seeking.id; seeking = null; lastSeek = id;
+    undressHider(el); paintSeekBtn(); updateBoardState();
+    if (!still()) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('found-pop'); setTimeout(() => el.classList.remove('found-pop'), 900); }
+    const [cx, cy] = toClient(el._x, el._y); try { burst(cx, cy, 14); } catch (e) { /* ignore */ }
+    try { confetti(24); } catch (e) { /* ignore */ }
+    SND.play('discover'); buzz(12);
+    const msg = `You found ${whoName(id)}! 🎉`;
+    toast(msg, 2800); announce(msg);
+    save();
+    document.dispatchEvent(new CustomEvent('ef:seek', { detail: { id, state: 'found' } }));
+    return true;
+  }
+  function hideAndSeek(rand) {
+    SND.unlock();
+    if (seeking && seeking.el && seeking.el.isConnected) {
+      const msg = `Keep looking! ${whoName(seeking.id)} is still hiding 🙈`;
+      toast(msg, 2600); announce(msg); return seeking.id;
+    }
+    const r = typeof rand === 'function' ? rand : Math.random;
+    const all = [...found].filter(id => D.byId[id]);
+    if (!all.length) return null;
+    const onIds = new Set(pieces().filter(p => !p.dataset.busy).map(p => p.dataset.id));
+    let pool = all.filter(id => !onIds.has(id));
+    if (!pool.length) pool = all.slice();
+    const fresh = pool.filter(id => id !== lastSeek);
+    if (fresh.length) pool = fresh;
+    const id = pool[Math.min(pool.length - 1, Math.floor(r() * pool.length))];
+    const existing = pieces().filter(p => !p.dataset.busy && p.dataset.id === id)[0];
+    let el, spawned = false;
+    if (existing) { if (sel && sel.el === existing) clearSel(); el = existing; }
+    else { const [x, y] = freeSpot(board.clientWidth * .55, board.clientHeight * .5); el = makePiece(id, x, y); spawned = true; }
+    dressHider(el); seeking = { el, id, spawned }; lastSeek = id; paintSeekBtn(); updateBoardState();
+    if (!still()) { el.classList.remove('pop'); void el.offsetWidth; el.classList.add('hide-pop'); setTimeout(() => el.classList.remove('hide-pop'), 800); }
+    SND.play('select'); buzz(8);
+    const msg = `🙈 ${whoName(id)} is hiding! Can you find them?`;
+    toast(msg, 3200); announce(msg);
+    document.dispatchEvent(new CustomEvent('ef:seek', { detail: { id, state: 'start', spawned } }));
+    return id;
+  }
+  $('#btnSeek').addEventListener('click', () => hideAndSeek());
+
   window.EF_GAME = {
     found, combine: (a, b) => D.combine(a, b), pieces, hopTo, bringToBoard, bringPair, toggleFave, isFave, setNick, nickOf, saveSticker, groupPhoto, openBook, openDetail, flipDetail, flipList, surpriseFriend, hint, openKeys, importDiscoveries, shinies: () => state.shinies.slice(), reachable: () => [...reachable()], milestones, setShinyChance: c => { shinyChance = c; }, noteShiny, filterBook: m => applyBookFilter(m, true), bookFilter: () => bookFilter, setFamily: (id, speak) => setBookFamily(id, !!speak), bookFamily: () => bookFamily, searchBook: q => searchBook(q || '', false), bookQuery: () => bookQuery, isNewFriend, newFriendIds: () => [...NEW_IDS],
-    applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, friendversary, friendversaries, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
+    applyTheme, setTheme, setMusic, setWall, setSize, setCalm, isCalm: () => still(), walls: () => WALLS.map(w => ({ ...w, open: wallOpen(w) })), inSeason: (id, d) => !!(wallById[id] && wallById[id].season && inSeason(wallById[id], d)), mixesLeft, setMixCounts, peekInfo, triedPair: (a, b) => tried.has(pairKey(a, b)), pet, twin, tidy, hideAndSeek, seeking: () => seeking && seeking.id, party, isPartying: () => partying, chatter, setChatterDelay: (ms, first) => { chatDelay = ms; if (first != null) chatFirst = first; armChatter(true); }, friendSince, friendversary, friendversaries, todayKey, madeCount, madeText, setSort, clearBoard, undoClear, canUndo: () => !!undoSnap,
     newFriends: () => newFriends, combo: () => ({ n: combo.n, left: comboLeft(), best: state.bestCombo }), setComboWindow: ms => { comboWindow = ms; }, doze, wake, isDozing: () => dozing, setDozeDelay: ms => { dozeDelay = ms; armDoze(); },
     ui: { openModal, closeModal, toast, confetti, burst, announce, icon }
   };
