@@ -1429,3 +1429,37 @@ html[data-theme="night"] .seek-btn { background: linear-gradient(180deg, #2a4a38
 html[data-theme="night"] .seek-btn.seeking { background: linear-gradient(180deg, #4a3a1c, #3a2a14); border-color: #ffd36e; color: #ffe39a; }
 html[data-theme="night"] .hide-bush { background: radial-gradient(120% 80% at 50% 20%, #4a8a58, #1f5a32 55%, #0f3a20); box-shadow: inset 0 6px 0 #6aaa70, 0 4px 0 #0a2814; }
 html[data-theme="night"] .piece.hiding .lbl { color: #9ecb9e; }
+
+/* 🌱 Family tree: how a friend was made, back to the first four */
+.tree-btn { background: linear-gradient(170deg, #eafbef, #e6f7ff); box-shadow: 0 3px 0 #cde6d6, var(--shadow); }
+html[data-theme="night"] .tree-btn { background: linear-gradient(170deg, #26402f, #243a44); box-shadow: 0 3px 0 #13241a, var(--shadow); }
+.lin-back { position: absolute; left: 14px; top: 14px; z-index: 2; }
+.modal.lineage .sheet { text-align: left; }
+.modal.lineage h2 { text-align: center; margin: 2px 46px 2px; font-size: 19px; line-height: 1.2; }
+.lin-title-sub { font-weight: 800; }
+.modal.lineage #linSub { text-align: center; margin: 0 0 10px; font-weight: 700; font-size: 13px; }
+.lin-tree { overflow: auto; max-height: min(64vh, 560px); padding: 4px 2px 8px; -webkit-overflow-scrolling: touch; }
+.lin-node { position: relative; }
+.lin-chip { display: inline-flex; align-items: center; gap: 7px; font: inherit; font-weight: 800; color: inherit; background: #fff; border: 2px solid #ffd9ec; border-radius: 999px; padding: 4px 13px 4px 5px; margin: 3px 0; box-shadow: var(--shadow); max-width: 100%; }
+button.lin-chip { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform .14s, background .14s; }
+button.lin-chip:hover { background: #fff0f8; transform: translateY(-1px); }
+button.lin-chip:active { transform: scale(.96); }
+button.lin-chip:focus-visible { outline: 3px solid #ff8fc8; outline-offset: 2px; }
+.lin-art { width: 34px; height: 34px; flex: none; display: block; }
+.lin-name { white-space: nowrap; }
+.lin-tag { font-size: 11px; font-weight: 700; color: var(--ink2); white-space: nowrap; }
+.reason-root > .lin-chip { border-color: var(--pink); background: linear-gradient(170deg, #fff, #fff0f7); font-size: 16px; padding: 6px 16px 6px 6px; }
+.reason-root > .lin-chip .lin-art { width: 42px; height: 42px; }
+.reason-base > .lin-chip { border-color: #ffe08a; background: #fffaf0; }
+.reason-secret > .lin-chip, .reason-more > .lin-chip { border-style: dashed; }
+/* the two ingredients of a friend, indented with a soft connector line */
+.lin-kids { margin-left: 16px; padding-left: 14px; border-left: 2px solid #ffd3ea; }
+.lin-kids > .lin-node::before { content: ""; position: absolute; left: -14px; top: 22px; width: 11px; height: 2px; background: #ffd3ea; border-radius: 2px; }
+html[data-theme="night"] .lin-chip { background: #32274e; border-color: #5a4580; }
+html[data-theme="night"] button.lin-chip:hover { background: #3d2f5c; }
+html[data-theme="night"] .reason-root > .lin-chip { background: linear-gradient(170deg, #3a2d5c, #2f2648); border-color: var(--pink); }
+html[data-theme="night"] .reason-base > .lin-chip { background: #3a331c; border-color: #8a7a3a; }
+html[data-theme="night"] .lin-kids { border-color: #5a4580; }
+html[data-theme="night"] .lin-kids > .lin-node::before { background: #5a4580; }
+html.calm button.lin-chip { transition: none; transform: none !important; }
+@media (prefers-reduced-motion: reduce) { button.lin-chip { transition: none; transform: none !important; } }

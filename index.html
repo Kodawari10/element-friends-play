@@ -148,8 +148,20 @@
       <div class="detail-actions">
         <button type="button" class="btn sticker-btn play-btn" id="detailPlay" aria-label="Bring this friend to the playfield"><span aria-hidden="true">🧺</span> Bring to playfield</button>
         <button type="button" class="btn sticker-btn" id="detailSticker" aria-label="Save a sticker picture of this friend"><span aria-hidden="true">📸</span> Save sticker</button>
+        <button type="button" class="btn sticker-btn tree-btn" id="detailTree" aria-label="See this friend's family tree"><span aria-hidden="true">🌱</span> Family tree</button>
       </div>
       <div id="detailRecipes" class="detail-recipes"></div>
+    </div>
+  </div>
+
+  <!-- 🌱 Family tree: how a friend was made, back to the first four -->
+  <div class="modal lineage" id="lineage" role="dialog" aria-modal="true" aria-labelledby="linTitle" hidden>
+    <div class="sheet small">
+      <button class="btn icon close" data-close aria-label="Close family tree"><i data-icon="x"></i></button>
+      <button type="button" class="btn icon lin-back" id="linBack" aria-label="Back to the previous friend" hidden><i data-icon="prev"></i></button>
+      <h2 id="linTitle">🌱 Family tree</h2>
+      <p class="muted" id="linSub"></p>
+      <div class="lin-tree" id="linTree"></div>
     </div>
   </div>
 
@@ -424,6 +436,7 @@
   <script src="js/omikuji.js"></script>
   <script src="js/achievements.js"></script>
   <script src="js/stats.js"></script>
+  <script src="js/lineage.js"></script>
   <script src="js/readaloud.js"></script>
   <script src="js/weather.js"></script>
   <script src="js/costumes.js"></script>
