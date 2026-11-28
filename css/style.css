@@ -1394,6 +1394,15 @@ html[data-theme="night"] .family-chip { background: #2c2445; color: #e6d9ff; box
 html[data-theme="night"] .family-chip .n { background: #4a3f77; color: #e6d9ff; }
 html[data-theme="night"] .family-chip.active, html[data-theme="night"] .family-chip[aria-checked="true"] { background: linear-gradient(140deg, #3a2f66, #4a2f5c); color: #fff; box-shadow: 0 3px 0 #17112a, inset 0 0 0 2px #b9a6ff; }
 html[data-theme="night"] .family-chip.active .n { background: #b9a6ff; color: #231a40; }
+/* 👑 Family complete */
+.family-chip.done .n { background: linear-gradient(90deg, #fff1b8, #ffd9ec); color: #9a6a00; }
+.family-chip.done.active .n { background: linear-gradient(90deg, #ffd36b, #ff9fcf); color: #fff; }
+html[data-theme="night"] .family-chip.done .n { background: #5a4a2a; color: #ffe08a; }
+.reveal-family { display: block; width: fit-content; max-width: 100%; margin: 0 auto 4px; padding: 3px 12px; border-radius: 18px; text-align: center; background: linear-gradient(90deg, #ffe9f4, #efe6ff); border: 2px solid #ff9fcf; color: #b3407e; font-weight: 900; font-size: 14px; animation: rankPop .45s cubic-bezier(.3, 1.4, .5, 1); }
+.reveal-family[hidden] { display: none; }
+html[data-theme="night"] .reveal-family { background: #3a2f58; border-color: #ff9fcf; color: #ffc6e4; }
+html.calm .reveal-family { animation: none; }
+@media (prefers-reduced-motion: reduce) { .reveal-family { animation: none; } }
 html.calm .family-chip.pop { animation: none; }
 @media (prefers-reduced-motion: reduce) { .family-chip.pop { animation: none; } }
 

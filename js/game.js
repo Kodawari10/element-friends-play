@@ -619,8 +619,13 @@
     const c = bumpCombo(); save();
     renderInventory(); updateCounter(true);
     announce(`New friend discovered: ${D.byId[id].name}!` + (c.n >= 2 ? ` Discovery combo ${c.n}!` : ''));
-    revealQueue.push({ id, a, b, combo: c.n, best: c.best, ms });
+    revealQueue.push({ id, a, b, combo: c.n, best: c.best, ms, fam: familyDone(id) });
     if (revealQueue.length === 1) setTimeout(showReveal, 380);
+  }
+  // 👑 Family complete: this discovery was the last missing friend of its family (Weather, Animals, Treats…)
+  function familyDone(id) {
+    const F = window.EF_FAMILIES, f = F && F.family(id); if (!f) return null;
+    const ids = F.ids(f); return ids.every(x => found.has(x)) ? { id: f, n: ids.length, name: F.name(f), emoji: F.emoji(f) } : null;
   }
   function showReveal() {
     const item = revealQueue[0]; if (!item) return;
@@ -634,11 +639,13 @@
     const rc = $('#revealCombo');
     const rm = $('#revealMilestone');
     if (item.ms) { rm.hidden = false; rm.textContent = `⭐ ${item.ms.text} ${item.ms.at} of ${TOTAL} friends!`; } else { rm.hidden = true; rm.textContent = ''; }
+    { const rf = $('#revealFamily'); if (rf) { rf.hidden = !item.fam; rf.textContent = item.fam ? `👑 Family complete! You found all ${item.fam.n} ${item.fam.emoji} ${item.fam.name} friends!` : ''; } }
     if (item.combo >= 2) { rc.hidden = false; rc.textContent = `🌟 Combo ×${item.combo}!` + (item.best ? ' New best!' : ''); } else rc.hidden = true;
     openModal('reveal');
     document.dispatchEvent(new CustomEvent('ef:reveal', { detail: { id: item.id } }));
     if (e.final) { SND.play('legendary'); confetti(110); } else { SND.play('discover'); confetti(36 + Math.min(4, Math.max(0, item.combo - 1)) * 12); }
     if (item.combo >= 2) setTimeout(() => SND.combo(item.combo), 650);
+    if (item.fam) { setTimeout(() => { confetti(60); announce(`Family complete! You found all ${item.fam.n} ${item.fam.name} friends.`); }, 700); document.dispatchEvent(new CustomEvent('ef:familycomplete', { detail: { family: item.fam.id, n: item.fam.n } })); }
     if (item.ms) { setTimeout(() => { confetti(48); announce(`Milestone star! ${item.ms.text} ${item.ms.at} of ${TOTAL} friends found.`); }, 500); document.dispatchEvent(new CustomEvent('ef:milestone', { detail: { at: item.ms.at, step: item.ms.step } })); }
   }
   function closeReveal() {
@@ -774,9 +781,9 @@
     FAM.list.forEach(f => {
       const ids = FAM.ids(f.id), n = ids.filter(id => found.has(id)).length, t = ids.length;
       const b = document.createElement('button');
-      b.type = 'button'; b.className = 'btn family-chip'; b.setAttribute('role', 'radio');
-      b.dataset.family = f.id; b.innerHTML = `${f.emoji} ${f.name} <b class="n">${n}/${t}</b>`;
-      b.setAttribute('aria-label', `${f.name} friends, ${n} of ${t} found`);
+      b.type = 'button'; b.className = 'btn family-chip' + (n === t ? ' done' : ''); b.setAttribute('role', 'radio');
+      b.dataset.family = f.id; b.innerHTML = `${f.emoji} ${f.name} <b class="n">${n === t ? '<span aria-hidden="true">👑</span> ' : ''}${n}/${t}</b>`;
+      b.setAttribute('aria-label', `${f.name} friends, ${n} of ${t} found${n === t ? ', family complete!' : ''}`);
       box.appendChild(b);
     });
     if (cur && !FAM.list.some(f => f.id === cur)) bookFamily = '';
